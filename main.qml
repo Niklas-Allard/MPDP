@@ -1,9 +1,15 @@
 import QtQuick
 import QtQuick.Window
+import QtQuick.Controls
 
-Window {
-    width: 640
-    height: 480
+ApplicationWindow {
     visible: true
-    title: qsTr("Hello World")
+    width: 800; height: 600
+    title: "MPDP"
+
+    StackView {
+        id: stackView
+        anchors.fill: parent
+        initialItem: "StartPage/main.qml"
+    }
 }
