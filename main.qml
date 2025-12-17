@@ -1,15 +1,21 @@
 import QtQuick
-import QtQuick.Window
 import QtQuick.Controls
 
 ApplicationWindow {
+    id: window
+    width: 800
+    height: 600
     visible: true
-    width: 800; height: 600
-    title: "MPDP"
+    title: "File Browser"
 
     StackView {
-        id: stackView
+        id: stack
         anchors.fill: parent
-        initialItem: "StartPage/main.qml"
+        
+        initialItem: null 
+
+        Component.onCompleted: {
+            stack.push("StartPage/main.qml")
+        }
     }
 }

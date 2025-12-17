@@ -3,79 +3,30 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 Item {
-    id: fileBrowserPage
+    id: startPage
     property int minCardWidth: 150
     property int minCardHeight: 150
     property int currentPage: 0
 
-    GridLayout {
-        id: grid
+    Item {
         anchors.fill: parent
-        anchors.margins: 10
-        anchors.bottomMargin: 60
-        columns: Math.max(1, Math.floor(width / minCardWidth))
-        rows: Math.max(1, Math.floor(height / minCardHeight))
-        property int cardsPerPage: columns * rows
-
-        Repeater {
-            model: myModel
-            delegate: Rectangle {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.maximumHeight: 250
-                visible: index >= fileBrowserPage.currentPage * grid.cardsPerPage && 
-                         index < (fileBrowserPage.currentPage + 1) * grid.cardsPerPage
-                
-                radius: 10
-                color: "#f0f0f0"
-                border.color: "#ddd"
-                border.width: 1
-                
-                ColumnLayout {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    
-                    Image {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true 
-                        Layout.maximumHeight: 200
-                        Layout.preferredHeight: 180
-                        source: model.image
-                        fillMode: Image.PreserveAspectCrop
-                    }
-                    
-                    Text {
-                        Layout.fillWidth: true
-                        text: model.title
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 14
-                        font.bold: true
-                    }
-                }
-            }
-        }
-    }
-
-    RowLayout {
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
-        anchors.margins: 10
-
-        Button {
-            text: "Vorherige"
-            enabled: fileBrowserPage.currentPage > 0
-            onClicked: fileBrowserPage.currentPage--
-        }
+        anchors.verticalCenter: parent.verticalCenter
 
         Text {
-            text: (fileBrowserPage.currentPage + 1) + " / " + 
-                  Math.ceil(myModel.rowCount() / grid.cardsPerPage)
+            text: "This is the File Browser Page"
+            font.pixelSize: 24
         }
-
         Button {
-            text: "Nächste"
-            enabled: fileBrowserPage.currentPage < Math.ceil(myModel.rowCount() / grid.cardsPerPage) - 1
-            onClicked: fileBrowserPage.currentPage++
+            text: "Go to Start Page"
+            anchors.top: parent.top
+            anchors.topMargin: 50
+            anchors.horizontalCenter: parent.horizontalCenter
+            onClicked: {
+                startPage.StackView.view.push("../FileBrowser/main.qml", {
+                    "folderData": folderData
+                }) 
+            }
         }
     }
 }
