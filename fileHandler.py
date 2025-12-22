@@ -7,7 +7,8 @@ class fileHandler:
         # Basis-Objekt für die aktuelle Datei/Ordner
         d = {
             'name': Path(path).stem,
-            'type': 'directory' if path.is_dir() else 'file'
+            'type': 'directory' if path.is_dir() else 'file',
+            'path': str(path)
         }
 
         if path.is_dir():

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtTextToSpeech
 
 Item {
     id: root
@@ -12,6 +13,10 @@ Item {
     property int minCardHeight: 150
     property int currentPage: 0
 
+    Component.onDestruction: {
+        tts.stop()
+    }
+
     // Header mit aktuellem Pfad/Namen
     Text {
         id: headerText
@@ -21,6 +26,10 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
+    }
+
+    TextToSpeech { 
+        id: tts 
     }
 
     GridLayout {
@@ -52,9 +61,25 @@ Item {
                 border.color: "#ddd"
                 
                 MouseArea {
+                    id: mouseAreaCard
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    property string pendingSpeak: ""
+
+                    Timer {
+                        id: speakTimer
+                        interval: Qt.styleHints.mouseDoubleClickInterval
+                        repeat: false
+                        onTriggered: tts.say(mouseAreaCard.pendingSpeak)
+                    }
+
                     onClicked: {
+                        mouseAreaCard.pendingSpeak = modelData.name
+                        speakTimer.restart()
+                    }
+
+                    onDoubleClicked: (mouse) => {
+                        speakTimer.stop()
                         if (modelData.type === "directory") {
                             console.log("Opened Directory", modelData.name)
                             
@@ -62,7 +87,16 @@ Item {
                                 "folderData": modelData
                             })
                         } else {
-                            console.log("File:", modelData.name)
+                            if (modelData.path) {
+                                var urlPath = "file:///" + modelData.path.replace(/\\/g, "/")
+                                
+                                root.StackView.view.push("../MultiMediaPlayer/main.qml", {
+                                    "mediaSource": urlPath
+                                })
+                                console.log("File:", modelData.name)
+                            } else {
+                                console.error("Fehler: Kein Pfad für Datei gefunden!", modelData.name)
+                            }
                         }
                     }
                 }
@@ -91,10 +125,14 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: 10
 
-        // Zurück-Button für Navigation (Wichtig!)
         Button {
             text: "Zurück"
             onClicked: root.StackView.view.pop()
+        }
+
+        Button {
+            text: "Home"
+            onClicked: root.StackView.view.pop(null)
         }
 
         // Pagination Buttons

@@ -16,6 +16,8 @@ ApplicationWindow {
 
         Component.onCompleted: {
             stack.push("StartPage/main.qml")
+            var win = Window.window
+            if (win) win.showFullScreen()
         }
     }
 }
