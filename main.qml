@@ -8,6 +8,8 @@ ApplicationWindow {
     visible: true
     title: "File Browser"
 
+    Image { source: "qrc:/icons/arrow_forward.png"; width: 32; height: 32 }
+
     StackView {
         id: stack
         anchors.fill: parent

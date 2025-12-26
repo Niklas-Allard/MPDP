@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='utf8'?>
+<nuitka-compilation-report nuitka_version="2.7.11" nuitka_commercial_version="not installed" mode="onefile" completion="error exit message (1)" exit_message="pyside6: Error, there is no Qt plugin family 'vectorimageformats'.">
+  <performance>
+    <memory_usage name="after_launch" value="40599552" />
+  </performance>
+  <data_composer blob_size="None" />
+  <command_line>
+    <option value="C:\dev\MPDP\main.py" />
+    <option value="--follow-imports" />
+    <option value="--enable-plugin=pyside6" />
+    <option value="--output-dir=C:\dev\MPDP\deployment" />
+    <option value="--quiet" />
+    <option value="--noinclude-qt-translations" />
+    <option value="--onefile" />
+    <option value="--noinclude-dlls=*.cpp.o" />
+    <option value="--noinclude-dlls=*.qsb" />
+    <option value="--windows-icon-from-ico=C:\Users\Nikla\AppData\Local\Programs\Python\Python313-arm64\Lib\site-packages\PySide6\scripts\deploy_lib\pyside_icon.ico" />
+    <option value="--include-qt-plugins=platforminputcontexts,qmllint,qmltooling,vectorimageformats" />
+  </command_line>
+  <plugins>
+    <plugin name="anti-bloat" user_enabled="no" />
+    <plugin name="data-files" user_enabled="no" />
+    <plugin name="delvewheel" user_enabled="no" />
+    <plugin name="dll-files" user_enabled="no" />
+    <plugin name="eventlet" user_enabled="no" />
+    <plugin name="gevent" user_enabled="no" />
+    <plugin name="gi" user_enabled="no" />
+    <plugin name="glfw" user_enabled="no" />
+    <plugin name="implicit-imports" user_enabled="no" />
+    <plugin name="kivy" user_enabled="no" />
+    <plugin name="matplotlib" user_enabled="no" />
+    <plugin name="multiprocessing" user_enabled="no" />
+    <plugin name="options-nanny" user_enabled="no" />
+    <plugin name="pbr-compat" user_enabled="no" />
+    <plugin name="pkg-resources" user_enabled="no" />
+    <plugin name="playwright" user_enabled="no" />
+    <plugin name="pyside6" user_enabled="yes" />
+    <plugin name="pywebview" user_enabled="no" />
+    <plugin name="spacy" user_enabled="no" />
+    <plugin name="transformers" user_enabled="no" />
+  </plugins>
+  <onefile cache_mode="temporary" unpack_dir="{TEMP}\onefile_{PID}_{TIME}" />
+  <distributions />
+  <python python_exe="${sys.prefix}\Scripts\python.exe" python_flavor="CPython Official" python_version="3.13.3" os_name="Windows" os_release="11" arch_name="arm64" filesystem_encoding="utf-8" gil="yes">
+    <search_path>
+      <path value="${cwd}" />
+      <path value="${sys.real_prefix}\DLLs" />
+      <path value="${sys.real_prefix}\Lib" />
+      <path value="${sys.real_prefix}" />
+      <path value="${sys.prefix}" />
+      <path value="${sys.prefix}\Lib\site-packages" />
+    </search_path>
+  </python>
+  <output run_filename="failed too early" />
+</nuitka-compilation-report>

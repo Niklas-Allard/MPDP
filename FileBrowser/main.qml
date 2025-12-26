@@ -126,32 +126,64 @@ Item {
         anchors.margins: 10
 
         Button {
-            text: "Zurück"
+            icon.source: "../icons/back.svg"
+            icon.width: 24
+            icon.height: 24
             onClicked: root.StackView.view.pop()
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
         }
 
         Button {
-            text: "Home"
+            icon.source: "../icons/home.svg"
+            icon.width: 24
+            icon.height: 24
             onClicked: root.StackView.view.pop(null)
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
         }
 
         // Pagination Buttons
         Button {
-            text: "<"
+            icon.source: "../icons/arrow_left.svg"
+            icon.width: 24
+            icon.height: 24
             enabled: root.currentPage > 0
             onClicked: root.currentPage--
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
         }
 
         Text {
+            id: pageIndicator
             property int totalItems: root.folderData && root.folderData.children ? root.folderData.children.length : 0
             text: (root.currentPage + 1) + " / " + Math.max(1, Math.ceil(totalItems / grid.cardsPerPage))
+            color: "#ffffffff"
+            font.pixelSize: 16
+            font.bold: true
+            MouseArea {
+                anchors.fill: parent
+
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    tts.say("Seite " + (root.currentPage + 1) + " von " + Math.max(1, Math.ceil(pageIndicator.totalItems / grid.cardsPerPage)))
+                }
+            }
         }
 
         Button {
-            text: ">"
+            icon.source: "../icons/arrow_forward.png"
+            icon.width: 24
+            icon.height: 24
             property int totalItems: root.folderData && root.folderData.children ? root.folderData.children.length : 0
             enabled: root.currentPage < Math.ceil(totalItems / grid.cardsPerPage) - 1
             onClicked: root.currentPage++
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
         }
     }
 }

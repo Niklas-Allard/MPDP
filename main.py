@@ -4,15 +4,19 @@ from pathlib import Path
 
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt
+from PySide6.QtCore import QAbstractListModel, QModelIndex, Qt, QResource, QFile
 
 from fileHandler import fileHandler
 from media_DB import Media_DB
-import json
 
 if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
+
+    rcc_path = Path(__file__).resolve().parent / "resources.rcc"
+    ok = QResource.registerResource(str(rcc_path), "/")  # mount unter :/
+    print("registerResource:", ok)
+    print("exists:", QFile.exists(":/icons/arrow_forward.png"))
     
     # create fileHandler instance
     fileManager = fileHandler()
