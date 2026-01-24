@@ -95,6 +95,23 @@ class Media_DB(QObject):
 
         return result
 
-video = Media_DB()
-video.add_to_history('C:\dev\MPDP\StartPage\main.qml')
-video.set_progress('C:\dev\MPDP\StartPage\main.qml', 0.75)
+    # Data will be used in main.py to provide main directories to QML
+    def get_main_directories(self) -> list:
+        """
+        Docstring for get_main_directories
+        
+        :return: list of main directories
+        :rtype: list
+        """
+        import json
+
+        config_file = Path(__file__).resolve().parent / "database" / "user_data.json"
+
+        if not config_file.exists():
+            return []
+
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+
+        main_dirs = config.get("main_directories", [])
+        return main_dirs

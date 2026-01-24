@@ -50,16 +50,27 @@ Item {
             model: root.folderData && root.folderData.children ? root.folderData.children : []
             
             delegate: Rectangle {
+                id: card
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                
-                visible: index >= root.currentPage * grid.cardsPerPage && 
-                         index < (root.currentPage + 1) * grid.cardsPerPage
-                
+
+                visible: index >= root.currentPage * grid.cardsPerPage &&
+                        index < (root.currentPage + 1) * grid.cardsPerPage
+
                 radius: 10
                 color: modelData.type === "directory" ? "#e3f2fd" : "#f0f0f0"
                 border.color: "#ddd"
-                
+                clip: true // Verhindert, dass das Bild über die abgerundeten Ecken ragt
+
+                // 1. Hintergrundbild (nimmt den ganzen Platz ein)
+                Image {
+                    id: bgImage
+                    anchors.fill: parent
+                    source: modelData.thumbnail || ""
+                    fillMode: Image.PreserveAspectCrop // Füllt die Karte komplett aus
+                    visible: status === Image.Ready // Nur anzeigen, wenn das Bild erfolgreich geladen wurde
+                }
+
                 MouseArea {
                     id: mouseAreaCard
                     anchors.fill: parent
@@ -82,14 +93,14 @@ Item {
                         speakTimer.stop()
                         if (modelData.type === "directory") {
                             console.log("Opened Directory", modelData.name)
-                            
+                            // Navigiert in den Ordner
                             root.StackView.view.push("main.qml", {
                                 "folderData": modelData
                             })
                         } else {
                             if (modelData.path) {
                                 var urlPath = "file:///" + modelData.path.replace(/\\/g, "/")
-                                
+                                // Öffnet den MediaPlayer
                                 root.StackView.view.push("../MultiMediaPlayer/main.qml", {
                                     "mediaSource": urlPath
                                 })
@@ -101,19 +112,45 @@ Item {
                     }
                 }
 
+                // 2. Inhalt (Emoji & Text)
                 ColumnLayout {
                     anchors.centerIn: parent
+                    spacing: 5
+                    // Verstecke das Emoji, wenn ein Bild angezeigt wird
+                    visible: !bgImage.visible 
+
                     Text {
                         text: modelData.type === "directory" ? "📁" : "📄"
                         font.pixelSize: 40
                         Layout.alignment: Qt.AlignHCenter
                     }
+                    
                     Text {
                         text: modelData.name
                         font.bold: true
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
-                        Layout.maximumWidth: parent.width
+                        Layout.maximumWidth: card.width - 10
+                    }
+                }
+
+                // 3. Text-Overlay (Optional: Name über dem Bild anzeigen)
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: nameLabel.height + 10
+                    color: "#80000000" // Halbtransparenter Balken
+                    visible: bgImage.visible // Nur anzeigen, wenn das Bild da ist
+
+                    Text {
+                        id: nameLabel
+                        text: modelData.name
+                        color: "white"
+                        font.bold: true
+                        anchors.centerIn: parent
+                        elide: Text.ElideRight
+                        width: parent.width - 10
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }

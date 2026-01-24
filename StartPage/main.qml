@@ -41,7 +41,7 @@ Item {
         property int cardsPerPage: columns * rows
 
         Repeater {
-            model: startPage.folderData && startPage.folderData.children ? startPage.folderData.children : []
+            model: mainDirs
 
             delegate: Rectangle {
                 Layout.fillWidth: true
@@ -50,8 +50,12 @@ Item {
                 visible: index >= startPage.currentPage * grid.cardsPerPage &&
                          index < (startPage.currentPage + 1) * grid.cardsPerPage
 
+                Component.onCompleted: {
+                    console.log("Delegate created for", modelData)
+                }
+
                 radius: 10
-                color: modelData.type === "directory" ? "#e3f2fd" : "#f0f0f0"
+                color: "#e3f2fd"
                 border.color: "#ddd"
 
                 MouseArea {
@@ -64,7 +68,7 @@ Item {
                         id: speakTimer
                         interval: Qt.styleHints.mouseDoubleClickInterval
                         repeat: false
-                        onTriggered: tts.say(mouseAreaCard.pendingSpeak)
+                        onTriggered: tts.say(mouseAreaCard.pendingSpeak);
                     }
 
                     onClicked: {
@@ -74,31 +78,14 @@ Item {
 
                     onDoubleClicked: (mouse) => {
                         speakTimer.stop()
-                        if (modelData.type === "directory") {
-                            console.log("Opened Directory", modelData.name)
-
-                            startPage.StackView.view.push("main.qml", {
-                                "folderData": modelData
-                            })
-                        } else {
-                            if (modelData.path) {
-                                var urlPath = "file:///" + modelData.path.replace(/\\/g, "/")
-
-                                startPage.StackView.view.push("../MultiMediaPlayer/main.qml", {
-                                    "mediaSource": urlPath
-                                })
-                                console.log("File:", modelData.name)
-                            } else {
-                                console.error("Fehler: Kein Pfad für Datei gefunden!", modelData.name)
-                            }
-                        }
+                        parent.parent.parent.parent.push("../FileBrowser/main.qml", { folderData: fileManager.path_to_dict(modelData.path) })
                     }
                 }
 
                 ColumnLayout {
                     anchors.centerIn: parent
                     Text {
-                        text: modelData.type === "directory" ? "📁" : "📄"
+                        text: "📁"
                         font.pixelSize: 40
                         Layout.alignment: Qt.AlignHCenter
                     }

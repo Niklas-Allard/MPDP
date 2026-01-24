@@ -20,14 +20,15 @@ if __name__ == "__main__":
     
     # create fileHandler instance
     fileManager = fileHandler()
-    files = fileManager.path_to_dict(Path(r'C:\Users\Nikla\Videos'))
+    engine.rootContext().setContextProperty("fileManager", fileManager)
 
     # Create an instance that handles database operations
     media_DB = Media_DB()
-    engine.rootContext().setContextProperty("media_DB", media_DB)
+    engine.rootContext().setContextProperty("m/creditedia_DB", media_DB)
 
-    # Modell als Context Property für QML verfügbar machen
-    engine.rootContext().setContextProperty("folderData", files)
+    # get main directories from database
+    main_dirs = media_DB.get_main_directories()
+    engine.rootContext().setContextProperty("mainDirs", main_dirs)
     
     # QML Datei laden
     qml_file = Path(__file__).resolve().parent / "main.qml"
