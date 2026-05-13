@@ -139,8 +139,26 @@ Item {
             anchors.margins: 10
             spacing: 10
 
-            Button { text: "Zurück"; onClicked: multiMediaPlayerPage.StackView.view.pop() }
-            Button { text: "Home"; onClicked: multiMediaPlayerPage.StackView.view.pop(null) }
+            Button {
+                icon.source: "qrc:/icons/back.svg"
+                icon.color: "white"
+                icon.width: 32
+                icon.height: 32
+                implicitWidth: 48
+                implicitHeight: 48
+                background: Rectangle { color: "transparent" }
+                onClicked: multiMediaPlayerPage.StackView.view.pop()
+            }
+            Button {
+                icon.source: "qrc:/icons/home.svg"
+                icon.color: "white"
+                icon.width: 32
+                icon.height: 32
+                implicitWidth: 48
+                implicitHeight: 48
+                background: Rectangle { color: "transparent" }
+                onClicked: multiMediaPlayerPage.StackView.view.pop(null)
+            }
 
             // OFFIZIELLER QT SLIDER (funktioniert garantiert)
             Slider {
