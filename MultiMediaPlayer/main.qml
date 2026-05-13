@@ -6,7 +6,7 @@ import QtMultimedia
 Item {
     id: multiMediaPlayerPage
 
-    property string mediaSource: "" 
+    property string mediaSource: ""
     property int cursorHideTimeout: 5000
 
     Component.onCompleted: {
@@ -140,7 +140,7 @@ Item {
             spacing: 10
 
             Button {
-                icon.source: "qrc:/icons/back.svg"
+                icon.source: "../icons/back.svg"
                 icon.color: "white"
                 icon.width: 32
                 icon.height: 32
@@ -150,7 +150,7 @@ Item {
                 onClicked: multiMediaPlayerPage.StackView.view.pop()
             }
             Button {
-                icon.source: "qrc:/icons/home.svg"
+                icon.source: "../icons/home.svg"
                 icon.color: "white"
                 icon.width: 32
                 icon.height: 32
