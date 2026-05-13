@@ -14,14 +14,12 @@ exec_directory = ./dist
 
 # path to the project file relative to project_dir
 project_file = pyproject.toml
-
-# application icon
-icon = C:\Users\Nikla\AppData\Local\Programs\Python\Python313-arm64\Lib\site-packages\PySide6\scripts\deploy_lib\pyside_icon.ico
+icon = C:\dev\MPDP\.venv313\Lib\site-packages\PySide6\scripts\deploy_lib\pyside_icon.ico
 
 [python]
 
 # python path
-python_path = C:\dev\MPDP\.venv\Scripts\python.exe
+python_path = C:\dev\MPDP\.venv313\Scripts\python.exe
 
 # python packages to install
 packages = Nuitka==2.7.11
@@ -40,7 +38,7 @@ qml_files = MultiMediaPlayer\main.qml,FileBrowser\main.qml,StartPage\main.qml,ma
 excluded_qml_plugins = QtCharts,QtSensors,QtWebEngine
 
 # qt modules used. comma separated
-modules = Core,Gui,Qml
+modules = Core,Gui,Qml,Quick,QuickControls2
 
 # qt plugins used by the application. only relevant for desktop deployment
 # for qt plugins used in android application see [android][plugins]
@@ -68,7 +66,7 @@ macos.permissions =
 mode = onefile
 
 # specify any extra nuitka arguments
-extra_args = --quiet --noinclude-qt-translations
+extra_args = --quiet --noinclude-qt-translations --force-dll-dependency-cache-update --zig
 
 [buildozer]
 
