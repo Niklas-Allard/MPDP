@@ -42,7 +42,7 @@ modules = Core,Gui,Qml,Quick,QuickControls2
 
 # qt plugins used by the application. only relevant for desktop deployment
 # for qt plugins used in android application see [android][plugins]
-plugins = accessiblebridge,egldeviceintegrations,generic,iconengines,imageformats,platforminputcontexts,platforms,platforms/darwin,platformthemes,qmllint,qmltooling,scenegraph,vectorimageformats,xcbglintegrations
+plugins = accessiblebridge,generic,iconengines,imageformats,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph
 
 [android]
 
