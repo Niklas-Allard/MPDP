@@ -32,7 +32,7 @@ Item {
         id: tts 
     }
 
-    GridLayout {
+    Grid {
         id: grid
         anchors.top: headerText.bottom
         anchors.bottom: parent.bottom
@@ -40,24 +40,26 @@ Item {
         anchors.right: parent.right
         anchors.margins: 10
         anchors.bottomMargin: 60
-        
+
+        columnSpacing: 5
+        rowSpacing: 5
+
         columns: Math.max(1, Math.floor(width / minCardWidth))
-        rows: Math.max(1, Math.floor(height / minCardHeight))
+        property real cellWidth: (width - columnSpacing * (columns - 1)) / columns
+        // So viele Reihen, wie bei minCardHeight passen würden → nutzt vertikalen Platz besser aus
+        property int rows: Math.max(1, Math.floor((height + rowSpacing) / (minCardHeight + rowSpacing)))
+        // Karten füllen ihre Reihe, aber max. 2:3 (verhindert über-streckte schmale Karten)
+        property real cellHeight: Math.min(cellWidth * 1.5, (height - rowSpacing * (rows - 1)) / rows)
         property int cardsPerPage: columns * rows
 
         Repeater {
             // WICHTIG: Wir nutzen root.folderData.children
             model: root.folderData && root.folderData.children ? root.folderData.children : []
-            
+
             delegate: Rectangle {
                 id: card
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                // Cover-Verhältnis 2:3 (Bild ist 2 breit zu 3 hoch).
-                // Greift nur, wenn die Karte sonst schlanker als 2:3 würde
-                // (z. B. einzelne Reihe, die sich über die volle Grid-Höhe streckt).
-                Layout.maximumHeight: width * 1.5
-                Layout.alignment: Qt.AlignTop
+                width: grid.cellWidth
+                height: grid.cellHeight
 
                 visible: index >= root.currentPage * grid.cardsPerPage &&
                         index < (root.currentPage + 1) * grid.cardsPerPage
