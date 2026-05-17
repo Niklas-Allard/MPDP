@@ -2,12 +2,20 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Dialogs
+import QtTextToSpeech
 
 Item {
     id: settingsPage
     objectName: "settingsPage"
 
     property var mainDirsModel: []
+
+    // TTS-Probe-Instanz, um verfügbare Stimmen aufzulisten und Einstellungen zu testen
+    TextToSpeech {
+        id: ttsProbe
+        volume: settingsManager.ttsVolume
+        rate: settingsManager.ttsRate
+    }
 
     function reloadFromSettings() {
         mainDirsModel = settingsManager.get_main_directories()
@@ -22,11 +30,10 @@ Item {
         function onGlobal_image_directory_changed() { reloadFromSettings() }
     }
 
-    // Header
     Text {
         id: headerText
         text: "Einstellungen"
-        font.pixelSize: 24
+        font.pixelSize: 24 * settingsManager.fontScale
         font.bold: true
         color: "white"
         anchors.top: parent.top
@@ -47,7 +54,301 @@ Item {
             width: scroll.availableWidth
             spacing: 20
 
-            // Global Image Directory
+            // ============================================================
+            // Darstellung & Barrierefreiheit
+            // ============================================================
+            GroupBox {
+                Layout.fillWidth: true
+                title: "Darstellung & Barrierefreiheit"
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 12
+
+                    // Karten-Mindestbreite
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Karten-Mindestbreite"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: cardWidthSlider
+                            Layout.fillWidth: true
+                            from: 100; to: 400; stepSize: 10
+                            value: settingsManager.cardMinWidth
+                            onMoved: settingsManager.cardMinWidth = value
+                        }
+                        Label { text: Math.round(cardWidthSlider.value) + " px"; Layout.preferredWidth: 70 }
+                    }
+
+                    // Karten-Mindesthöhe
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Karten-Mindesthöhe"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: cardHeightSlider
+                            Layout.fillWidth: true
+                            from: 100; to: 400; stepSize: 10
+                            value: settingsManager.cardMinHeight
+                            onMoved: settingsManager.cardMinHeight = value
+                        }
+                        Label { text: Math.round(cardHeightSlider.value) + " px"; Layout.preferredWidth: 70 }
+                    }
+
+                    // Schriftgrößen-Skalierung
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Schriftgröße"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: fontScaleSlider
+                            Layout.fillWidth: true
+                            from: 0.8; to: 2.0; stepSize: 0.1
+                            value: settingsManager.fontScale
+                            onMoved: settingsManager.fontScale = value
+                        }
+                        Label { text: fontScaleSlider.value.toFixed(1) + "×"; Layout.preferredWidth: 70 }
+                    }
+
+                    // Theme
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Farbschema"; Layout.preferredWidth: 220 }
+                        ComboBox {
+                            id: themeCombo
+                            Layout.fillWidth: true
+                            textRole: "label"
+                            valueRole: "value"
+                            model: [
+                                { label: "Hell",          value: "light" },
+                                { label: "Dunkel",        value: "dark" },
+                                { label: "Hoher Kontrast", value: "highContrast" }
+                            ]
+                            Component.onCompleted: currentIndex = indexOfValue(settingsManager.theme)
+                            onActivated: settingsManager.theme = currentValue
+                        }
+                    }
+                }
+            }
+
+            // ============================================================
+            // Sprachausgabe
+            // ============================================================
+            GroupBox {
+                Layout.fillWidth: true
+                title: "Sprachausgabe"
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 12
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Sprachausgabe aktiv"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.ttsEnabled
+                            onToggled: settingsManager.ttsEnabled = checked
+                        }
+                    }
+
+                    // Stimme
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Stimme"; Layout.preferredWidth: 220 }
+                        ComboBox {
+                            id: voiceCombo
+                            Layout.fillWidth: true
+                            enabled: settingsManager.ttsEnabled
+                            // Stimmen-Liste dynamisch aus dem TTS-Engine
+                            model: {
+                                var voices = ttsProbe.availableVoices()
+                                var names = []
+                                for (var i = 0; i < voices.length; i++) {
+                                    names.push(voices[i].name)
+                                }
+                                return names
+                            }
+                            Component.onCompleted: {
+                                var idx = model.indexOf(settingsManager.ttsVoice)
+                                if (idx >= 0) currentIndex = idx
+                            }
+                            onActivated: {
+                                settingsManager.ttsVoice = currentText
+                                var voices = ttsProbe.availableVoices()
+                                for (var i = 0; i < voices.length; i++) {
+                                    if (voices[i].name === currentText) {
+                                        ttsProbe.voice = voices[i]
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Geschwindigkeit
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Geschwindigkeit"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: rateSlider
+                            Layout.fillWidth: true
+                            enabled: settingsManager.ttsEnabled
+                            from: -1.0; to: 1.0; stepSize: 0.1
+                            value: settingsManager.ttsRate
+                            onMoved: settingsManager.ttsRate = value
+                        }
+                        Label { text: rateSlider.value.toFixed(1); Layout.preferredWidth: 50 }
+                    }
+
+                    // Lautstärke
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Lautstärke"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: ttsVolSlider
+                            Layout.fillWidth: true
+                            enabled: settingsManager.ttsEnabled
+                            from: 0.0; to: 1.0; stepSize: 0.05
+                            value: settingsManager.ttsVolume
+                            onMoved: settingsManager.ttsVolume = value
+                        }
+                        Label { text: Math.round(ttsVolSlider.value * 100) + " %"; Layout.preferredWidth: 50 }
+                    }
+
+                    // Test-Button
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: ""; Layout.preferredWidth: 220 }
+                        Button {
+                            text: "Probehören"
+                            enabled: settingsManager.ttsEnabled
+                            onClicked: ttsProbe.say("Hallo, dies ist ein Test der Sprachausgabe.")
+                        }
+                    }
+
+                    // Klick-Verzögerung
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Verzögerung vor Sprechen"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: clickDelaySlider
+                            Layout.fillWidth: true
+                            from: 0; to: 2000; stepSize: 50
+                            value: settingsManager.clickSpeakDelay
+                            onMoved: settingsManager.clickSpeakDelay = value
+                        }
+                        Label { text: Math.round(clickDelaySlider.value) + " ms"; Layout.preferredWidth: 70 }
+                    }
+                }
+            }
+
+            // ============================================================
+            // Navigation & Interaktion
+            // ============================================================
+            GroupBox {
+                Layout.fillWidth: true
+                title: "Navigation & Interaktion"
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 12
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Öffnen mit Einfachklick"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.openOnSingleClick
+                            onToggled: settingsManager.openOnSingleClick = checked
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Versteckte Dateien zeigen"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.showHiddenFiles
+                            onToggled: settingsManager.showHiddenFiles = checked
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Sortierung"; Layout.preferredWidth: 220 }
+                        ComboBox {
+                            id: sortCombo
+                            Layout.fillWidth: true
+                            textRole: "label"
+                            valueRole: "value"
+                            model: [
+                                { label: "Name (A → Z)", value: "name_asc"  },
+                                { label: "Name (Z → A)", value: "name_desc" },
+                                { label: "Datum (neu zuerst)", value: "date_desc" },
+                                { label: "Größe (groß zuerst)", value: "size_desc" }
+                            ]
+                            Component.onCompleted: currentIndex = indexOfValue(settingsManager.sortOrder)
+                            onActivated: settingsManager.sortOrder = currentValue
+                        }
+                    }
+                }
+            }
+
+            // ============================================================
+            // Medienwiedergabe
+            // ============================================================
+            GroupBox {
+                Layout.fillWidth: true
+                title: "Medienwiedergabe"
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 12
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Standardlautstärke"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: defVolSlider
+                            Layout.fillWidth: true
+                            from: 0.0; to: 1.0; stepSize: 0.05
+                            value: settingsManager.defaultVolume
+                            onMoved: settingsManager.defaultVolume = value
+                        }
+                        Label { text: Math.round(defVolSlider.value * 100) + " %"; Layout.preferredWidth: 50 }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Wiedergabe fortsetzen"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.resumePlayback
+                            onToggled: settingsManager.resumePlayback = checked
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Cursor ausblenden nach"; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: cursorSlider
+                            Layout.fillWidth: true
+                            from: 1000; to: 30000; stepSize: 500
+                            value: settingsManager.cursorHideTimeout
+                            onMoved: settingsManager.cursorHideTimeout = value
+                        }
+                        Label { text: (cursorSlider.value / 1000).toFixed(1) + " s"; Layout.preferredWidth: 70 }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Nächste Datei automatisch"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.autoPlayNext
+                            onToggled: settingsManager.autoPlayNext = checked
+                        }
+                    }
+                }
+            }
+
+            // ============================================================
+            // Globales Bilderverzeichnis
+            // ============================================================
             GroupBox {
                 Layout.fillWidth: true
                 title: "Globales Bilderverzeichnis (Cover/Thumbnails)"
@@ -74,7 +375,9 @@ Item {
                 }
             }
 
-            // Main Directories
+            // ============================================================
+            // Hauptverzeichnisse
+            // ============================================================
             GroupBox {
                 Layout.fillWidth: true
                 title: "Hauptverzeichnisse"
@@ -116,7 +419,6 @@ Item {
                         }
                     }
 
-                    // Add new entry
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
@@ -145,10 +447,18 @@ Item {
                     }
                 }
             }
+
+            // ============================================================
+            // Reset
+            // ============================================================
+            Button {
+                Layout.alignment: Qt.AlignRight
+                text: "Auf Standardwerte zurücksetzen"
+                onClicked: settingsManager.reset_to_defaults()
+            }
         }
     }
 
-    // Footer with back button
     RowLayout {
         id: footer
         anchors.horizontalCenter: parent.horizontalCenter
@@ -166,7 +476,6 @@ Item {
         id: imageDirDialog
         title: "Bilderverzeichnis auswählen"
         onAccepted: {
-            // FolderDialog liefert eine file:// URL, in lokalen Pfad umwandeln
             var url = imageDirDialog.selectedFolder.toString()
             var localPath = url.replace(/^file:\/{2,3}/, "")
             imageDirField.text = decodeURIComponent(localPath)

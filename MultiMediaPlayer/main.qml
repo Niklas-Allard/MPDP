@@ -7,11 +7,12 @@ Item {
     id: multiMediaPlayerPage
 
     property string mediaSource: ""
-    property int cursorHideTimeout: 5000
+    // aus QSettings, mit sinnvollem Fallback
+    property int cursorHideTimeout: settingsManager ? settingsManager.cursorHideTimeout : 5000
 
     Component.onCompleted: {
         if (typeof media_DB !== "undefined") {
-            media_DB.add_to_history(mediaSource.replace("file:///", ""))    
+            media_DB.add_to_history(mediaSource.replace("file:///", ""))
         }
     }
 
@@ -19,10 +20,10 @@ Item {
         id: progressTimer
         interval: 5000
         repeat: true
-        running: true
+        running: settingsManager ? settingsManager.resumePlayback : true
         onTriggered: {
             if (typeof media_DB !== "undefined") {
-                media_DB.set_progress(multiMediaPlayerPage.mediaSource.replace("file:///", ""), Math.floor(mediaplayer.position / 1000)) // saves progress in seconds
+                media_DB.set_progress(multiMediaPlayerPage.mediaSource.replace("file:///", ""), Math.floor(mediaplayer.position / 1000))
             }
         }
     }
@@ -33,14 +34,14 @@ Item {
         audioOutput: AudioOutput {
             id: audioOutput
             muted: true
+            volume: settingsManager ? settingsManager.defaultVolume : 1.0
         }
         videoOutput: videoOutput
-        position: { 
-            if (typeof media_DB !== "undefined") {
+        position: {
+            if (settingsManager && settingsManager.resumePlayback && typeof media_DB !== "undefined") {
                 var pos = media_DB.get_progress(multiMediaPlayerPage.mediaSource.replace("file:///", ""))
-                console.log("Restoring position: " + pos)
                 if (pos !== null) {
-                    return pos * 1000 // convert seconds to milliseconds
+                    return pos * 1000
                 }
             }
             return 0
@@ -55,11 +56,10 @@ Item {
         running: true
         onTriggered: {
             mediaplayer.pause()
-            if (typeof media_DB !== "undefined") {
+            if (settingsManager && settingsManager.resumePlayback && typeof media_DB !== "undefined") {
                 var pos = media_DB.get_progress(multiMediaPlayerPage.mediaSource.replace("file:///", ""))
-                console.log("Restoring position: " + pos)
                 if (pos !== null) {
-                    mediaplayer.position = pos * 1000 // convert seconds to milliseconds
+                    mediaplayer.position = pos * 1000
                 }
             }
             audioOutput.muted = false

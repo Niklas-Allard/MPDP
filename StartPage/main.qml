@@ -8,19 +8,36 @@ Item {
 
     // Damit das Grid genauso wie im FileBrowser funktioniert:
     property var folderData: null
-    property int minCardWidth: 150
-    property int minCardHeight: 150
+    property int minCardWidth: settingsManager.cardMinWidth
+    property int minCardHeight: settingsManager.cardMinHeight
     property int currentPage: 0
 
     TextToSpeech {
         id: tts
+        volume: settingsManager.ttsVolume
+        rate: settingsManager.ttsRate
+        Component.onCompleted: {
+            if (settingsManager.ttsVoice) {
+                var voices = availableVoices()
+                for (var i = 0; i < voices.length; i++) {
+                    if (voices[i].name === settingsManager.ttsVoice) {
+                        voice = voices[i]
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    function speakIfEnabled(text) {
+        if (settingsManager.ttsEnabled) tts.say(text)
     }
 
     // Header mit aktuellem Pfad/Namen
     Text {
         id: headerText
         text: startPage.folderData ? startPage.folderData.name : "..."
-        font.pixelSize: 20
+        font.pixelSize: 20 * settingsManager.fontScale
         font.bold: true
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
@@ -69,21 +86,31 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     property string pendingSpeak: ""
 
+                    function openItem() {
+                        parent.parent.parent.parent.push("../FileBrowser/main.qml",
+                            { folderData: fileManager.path_to_dict(modelData.path) })
+                    }
+
                     Timer {
                         id: speakTimer
-                        interval: Qt.styleHints.mouseDoubleClickInterval
+                        interval: settingsManager.clickSpeakDelay
                         repeat: false
-                        onTriggered: tts.say(mouseAreaCard.pendingSpeak);
+                        onTriggered: startPage.speakIfEnabled(mouseAreaCard.pendingSpeak)
                     }
 
                     onClicked: {
-                        mouseAreaCard.pendingSpeak = modelData.name
-                        speakTimer.restart()
+                        if (settingsManager.openOnSingleClick) {
+                            speakTimer.stop()
+                            openItem()
+                        } else {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
                     }
 
                     onDoubleClicked: (mouse) => {
                         speakTimer.stop()
-                        parent.parent.parent.parent.push("../FileBrowser/main.qml", { folderData: fileManager.path_to_dict(modelData.path) })
+                        openItem()
                     }
                 }
 
@@ -91,12 +118,13 @@ Item {
                     anchors.centerIn: parent
                     Text {
                         text: "📁"
-                        font.pixelSize: 40
+                        font.pixelSize: 40 * settingsManager.fontScale
                         Layout.alignment: Qt.AlignHCenter
                     }
                     Text {
                         text: modelData.name
                         font.bold: true
+                        font.pixelSize: 14 * settingsManager.fontScale
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
                         Layout.maximumWidth: parent.width
@@ -126,14 +154,14 @@ Item {
                                      ? startPage.folderData.children.length : 0
             text: (startPage.currentPage + 1) + " / " + Math.max(1, Math.ceil(totalItems / grid.cardsPerPage))
             color: "#ffffffff"
-            font.pixelSize: 16
+            font.pixelSize: 16 * settingsManager.fontScale
             font.bold: true
 
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    tts.say("Seite " + (startPage.currentPage + 1) + " von " +
+                    startPage.speakIfEnabled("Seite " + (startPage.currentPage + 1) + " von " +
                             Math.max(1, Math.ceil(pageIndicator.totalItems / grid.cardsPerPage)))
                 }
             }

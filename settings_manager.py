@@ -1,25 +1,71 @@
 from pathlib import Path
-from PySide6.QtCore import QObject, QSettings, Slot, Signal
+from PySide6.QtCore import QObject, QSettings, Slot, Signal, Property
 
 
 class SettingsManager(QObject):
     """QSettings-basierte Konfigurationsverwaltung.
 
-    Ersetzt die alte JSON-Datei (database/user_data.json).
+    Properties (Qt Property) ermöglichen Live-Binding aus QML.
     Beim ersten Start werden vorhandene JSON-Daten einmalig migriert.
     """
 
+    ORG_NAME = "MPDP"
+    APP_NAME = "MediaPlayer"
+
+    # ---- Signals (bestehend) -------------------------------------------------
     main_directories_changed = Signal()
     global_image_directory_changed = Signal()
 
-    ORG_NAME = "MPDP"
-    APP_NAME = "MediaPlayer"
+    # ---- Signals (neu, je Property) ------------------------------------------
+    cardMinWidthChanged = Signal()
+    cardMinHeightChanged = Signal()
+    fontScaleChanged = Signal()
+    themeChanged = Signal()
+
+    ttsEnabledChanged = Signal()
+    ttsVoiceChanged = Signal()
+    ttsRateChanged = Signal()
+    ttsVolumeChanged = Signal()
+    clickSpeakDelayChanged = Signal()
+
+    openOnSingleClickChanged = Signal()
+    showHiddenFilesChanged = Signal()
+    sortOrderChanged = Signal()
+
+    defaultVolumeChanged = Signal()
+    resumePlaybackChanged = Signal()
+    cursorHideTimeoutChanged = Signal()
+    autoPlayNextChanged = Signal()
+
+    DEFAULTS = {
+        # Darstellung
+        "cardMinWidth": 150,
+        "cardMinHeight": 150,
+        "fontScale": 1.0,
+        "theme": "light",  # "light" | "dark" | "highContrast"
+        # Sprachausgabe
+        "ttsEnabled": True,
+        "ttsVoice": "",
+        "ttsRate": 0.0,        # -1.0 .. 1.0
+        "ttsVolume": 1.0,      # 0.0 .. 1.0
+        "clickSpeakDelay": 400,  # ms
+        # Navigation
+        "openOnSingleClick": False,
+        "showHiddenFiles": False,
+        "sortOrder": "name_asc",  # name_asc | name_desc | date_desc | size_desc
+        # Wiedergabe
+        "defaultVolume": 1.0,
+        "resumePlayback": True,
+        "cursorHideTimeout": 5000,  # ms
+        "autoPlayNext": False,
+    }
 
     def __init__(self):
         super().__init__()
         self._settings = QSettings(self.ORG_NAME, self.APP_NAME)
         self._migrate_from_json_if_needed()
 
+    # ---- Migration -----------------------------------------------------------
     def _migrate_from_json_if_needed(self):
         if self._settings.value("migrated_from_json", False, type=bool):
             return
@@ -49,8 +95,19 @@ class SettingsManager(QObject):
         self._settings.sync()
         print(f"[SettingsManager] {len(main_dirs)} Verzeichnisse aus JSON migriert.")
 
+    # ---- generische Helfer ---------------------------------------------------
+    def _get(self, key, type_):
+        return self._settings.value(key, self.DEFAULTS[key], type=type_)
+
+    def _set(self, key, value, signal):
+        current = self._settings.value(key, self.DEFAULTS[key])
+        if current != value:
+            self._settings.setValue(key, value)
+            self._settings.sync()
+            signal.emit()
+
+    # ---- Hauptverzeichnisse (bestehend) --------------------------------------
     def _write_main_directories(self, dirs: list):
-        # Alte Einträge sicher entfernen, damit kürzere Listen korrekt gespeichert werden
         self._settings.remove("main_directories")
         self._settings.beginWriteArray("main_directories", len(dirs))
         for i, entry in enumerate(dirs):
@@ -114,3 +171,157 @@ class SettingsManager(QObject):
         self._settings.setValue("global_image_directory", path)
         self._settings.sync()
         self.global_image_directory_changed.emit()
+
+    # ---- Darstellung ---------------------------------------------------------
+    @Property(int, notify=cardMinWidthChanged)
+    def cardMinWidth(self):
+        return self._get("cardMinWidth", int)
+
+    @cardMinWidth.setter
+    def cardMinWidth(self, value):
+        self._set("cardMinWidth", int(value), self.cardMinWidthChanged)
+
+    @Property(int, notify=cardMinHeightChanged)
+    def cardMinHeight(self):
+        return self._get("cardMinHeight", int)
+
+    @cardMinHeight.setter
+    def cardMinHeight(self, value):
+        self._set("cardMinHeight", int(value), self.cardMinHeightChanged)
+
+    @Property(float, notify=fontScaleChanged)
+    def fontScale(self):
+        return self._get("fontScale", float)
+
+    @fontScale.setter
+    def fontScale(self, value):
+        self._set("fontScale", float(value), self.fontScaleChanged)
+
+    @Property(str, notify=themeChanged)
+    def theme(self):
+        return self._get("theme", str)
+
+    @theme.setter
+    def theme(self, value):
+        self._set("theme", str(value), self.themeChanged)
+
+    # ---- Sprachausgabe -------------------------------------------------------
+    @Property(bool, notify=ttsEnabledChanged)
+    def ttsEnabled(self):
+        return self._get("ttsEnabled", bool)
+
+    @ttsEnabled.setter
+    def ttsEnabled(self, value):
+        self._set("ttsEnabled", bool(value), self.ttsEnabledChanged)
+
+    @Property(str, notify=ttsVoiceChanged)
+    def ttsVoice(self):
+        return self._get("ttsVoice", str)
+
+    @ttsVoice.setter
+    def ttsVoice(self, value):
+        self._set("ttsVoice", str(value), self.ttsVoiceChanged)
+
+    @Property(float, notify=ttsRateChanged)
+    def ttsRate(self):
+        return self._get("ttsRate", float)
+
+    @ttsRate.setter
+    def ttsRate(self, value):
+        self._set("ttsRate", float(value), self.ttsRateChanged)
+
+    @Property(float, notify=ttsVolumeChanged)
+    def ttsVolume(self):
+        return self._get("ttsVolume", float)
+
+    @ttsVolume.setter
+    def ttsVolume(self, value):
+        self._set("ttsVolume", float(value), self.ttsVolumeChanged)
+
+    @Property(int, notify=clickSpeakDelayChanged)
+    def clickSpeakDelay(self):
+        return self._get("clickSpeakDelay", int)
+
+    @clickSpeakDelay.setter
+    def clickSpeakDelay(self, value):
+        self._set("clickSpeakDelay", int(value), self.clickSpeakDelayChanged)
+
+    # ---- Navigation ----------------------------------------------------------
+    @Property(bool, notify=openOnSingleClickChanged)
+    def openOnSingleClick(self):
+        return self._get("openOnSingleClick", bool)
+
+    @openOnSingleClick.setter
+    def openOnSingleClick(self, value):
+        self._set("openOnSingleClick", bool(value), self.openOnSingleClickChanged)
+
+    @Property(bool, notify=showHiddenFilesChanged)
+    def showHiddenFiles(self):
+        return self._get("showHiddenFiles", bool)
+
+    @showHiddenFiles.setter
+    def showHiddenFiles(self, value):
+        self._set("showHiddenFiles", bool(value), self.showHiddenFilesChanged)
+
+    @Property(str, notify=sortOrderChanged)
+    def sortOrder(self):
+        return self._get("sortOrder", str)
+
+    @sortOrder.setter
+    def sortOrder(self, value):
+        self._set("sortOrder", str(value), self.sortOrderChanged)
+
+    # ---- Wiedergabe ----------------------------------------------------------
+    @Property(float, notify=defaultVolumeChanged)
+    def defaultVolume(self):
+        return self._get("defaultVolume", float)
+
+    @defaultVolume.setter
+    def defaultVolume(self, value):
+        self._set("defaultVolume", float(value), self.defaultVolumeChanged)
+
+    @Property(bool, notify=resumePlaybackChanged)
+    def resumePlayback(self):
+        return self._get("resumePlayback", bool)
+
+    @resumePlayback.setter
+    def resumePlayback(self, value):
+        self._set("resumePlayback", bool(value), self.resumePlaybackChanged)
+
+    @Property(int, notify=cursorHideTimeoutChanged)
+    def cursorHideTimeout(self):
+        return self._get("cursorHideTimeout", int)
+
+    @cursorHideTimeout.setter
+    def cursorHideTimeout(self, value):
+        self._set("cursorHideTimeout", int(value), self.cursorHideTimeoutChanged)
+
+    @Property(bool, notify=autoPlayNextChanged)
+    def autoPlayNext(self):
+        return self._get("autoPlayNext", bool)
+
+    @autoPlayNext.setter
+    def autoPlayNext(self, value):
+        self._set("autoPlayNext", bool(value), self.autoPlayNextChanged)
+
+    # ---- Reset ---------------------------------------------------------------
+    @Slot()
+    def reset_to_defaults(self):
+        """Setzt alle einzelnen Einstellungen auf Defaults zurück
+        (Hauptverzeichnisse und globales Bilderverzeichnis bleiben unangetastet)."""
+        for key, default in self.DEFAULTS.items():
+            self._settings.setValue(key, default)
+        self._settings.sync()
+        # alle Signals feuern
+        for sig in [
+            self.cardMinWidthChanged, self.cardMinHeightChanged,
+            self.fontScaleChanged, self.themeChanged,
+            self.ttsEnabledChanged, self.ttsVoiceChanged,
+            self.ttsRateChanged, self.ttsVolumeChanged,
+            self.clickSpeakDelayChanged,
+            self.openOnSingleClickChanged, self.showHiddenFilesChanged,
+            self.sortOrderChanged,
+            self.defaultVolumeChanged, self.resumePlaybackChanged,
+            self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
+        ]:
+            sig.emit()

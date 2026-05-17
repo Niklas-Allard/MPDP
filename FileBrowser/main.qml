@@ -9,8 +9,8 @@ Item {
     // WICHTIG: Hier kommen die Daten für DIESE Seite rein
     property var folderData: null 
 
-    property int minCardWidth: 150
-    property int minCardHeight: 150
+    property int minCardWidth: settingsManager.cardMinWidth
+    property int minCardHeight: settingsManager.cardMinHeight
     property int currentPage: 0
 
     Component.onDestruction: {
@@ -21,15 +21,32 @@ Item {
     Text {
         id: headerText
         text: root.folderData ? root.folderData.name : "..."
-        font.pixelSize: 20
+        font.pixelSize: 20 * settingsManager.fontScale
         font.bold: true
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
     }
 
-    TextToSpeech { 
-        id: tts 
+    TextToSpeech {
+        id: tts
+        volume: settingsManager.ttsVolume
+        rate: settingsManager.ttsRate
+        Component.onCompleted: {
+            if (settingsManager.ttsVoice) {
+                var voices = availableVoices()
+                for (var i = 0; i < voices.length; i++) {
+                    if (voices[i].name === settingsManager.ttsVoice) {
+                        voice = voices[i]
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    function speakIfEnabled(text) {
+        if (settingsManager.ttsEnabled) tts.say(text)
     }
 
     Grid {
@@ -84,38 +101,43 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     property string pendingSpeak: ""
 
+                    function openItem() {
+                        if (modelData.type === "directory") {
+                            console.log("Opened Directory", modelData.name)
+                            root.StackView.view.push("main.qml", {
+                                "folderData": modelData
+                            })
+                        } else if (modelData.path) {
+                            var urlPath = "file:///" + modelData.path.replace(/\\/g, "/")
+                            root.StackView.view.push("../MultiMediaPlayer/main.qml", {
+                                "mediaSource": urlPath
+                            })
+                            console.log("File:", modelData.name)
+                        } else {
+                            console.error("Fehler: Kein Pfad für Datei gefunden!", modelData.name)
+                        }
+                    }
+
                     Timer {
                         id: speakTimer
-                        interval: Qt.styleHints.mouseDoubleClickInterval
+                        interval: settingsManager.clickSpeakDelay
                         repeat: false
-                        onTriggered: tts.say(mouseAreaCard.pendingSpeak)
+                        onTriggered: root.speakIfEnabled(mouseAreaCard.pendingSpeak)
                     }
 
                     onClicked: {
-                        mouseAreaCard.pendingSpeak = modelData.name
-                        speakTimer.restart()
+                        if (settingsManager.openOnSingleClick) {
+                            speakTimer.stop()
+                            openItem()
+                        } else {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
                     }
 
                     onDoubleClicked: (mouse) => {
                         speakTimer.stop()
-                        if (modelData.type === "directory") {
-                            console.log("Opened Directory", modelData.name)
-                            // Navigiert in den Ordner
-                            root.StackView.view.push("main.qml", {
-                                "folderData": modelData
-                            })
-                        } else {
-                            if (modelData.path) {
-                                var urlPath = "file:///" + modelData.path.replace(/\\/g, "/")
-                                // Öffnet den MediaPlayer
-                                root.StackView.view.push("../MultiMediaPlayer/main.qml", {
-                                    "mediaSource": urlPath
-                                })
-                                console.log("File:", modelData.name)
-                            } else {
-                                console.error("Fehler: Kein Pfad für Datei gefunden!", modelData.name)
-                            }
-                        }
+                        openItem()
                     }
                 }
 
@@ -124,17 +146,18 @@ Item {
                     anchors.centerIn: parent
                     spacing: 5
                     // Verstecke das Emoji, wenn ein Bild angezeigt wird
-                    visible: !bgImage.visible 
+                    visible: !bgImage.visible
 
                     Text {
                         text: modelData.type === "directory" ? "📁" : "📄"
-                        font.pixelSize: 40
+                        font.pixelSize: 40 * settingsManager.fontScale
                         Layout.alignment: Qt.AlignHCenter
                     }
-                    
+
                     Text {
                         text: modelData.name
                         font.bold: true
+                        font.pixelSize: 14 * settingsManager.fontScale
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
                         Layout.maximumWidth: card.width - 10
@@ -154,6 +177,7 @@ Item {
                         text: modelData.name
                         color: "white"
                         font.bold: true
+                        font.pixelSize: 14 * settingsManager.fontScale
                         anchors.centerIn: parent
                         elide: Text.ElideRight
                         width: parent.width - 10
@@ -206,14 +230,14 @@ Item {
             property int totalItems: root.folderData && root.folderData.children ? root.folderData.children.length : 0
             text: (root.currentPage + 1) + " / " + Math.max(1, Math.ceil(totalItems / grid.cardsPerPage))
             color: "#ffffffff"
-            font.pixelSize: 16
+            font.pixelSize: 16 * settingsManager.fontScale
             font.bold: true
             MouseArea {
                 anchors.fill: parent
 
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    tts.say("Seite " + (root.currentPage + 1) + " von " + Math.max(1, Math.ceil(pageIndicator.totalItems / grid.cardsPerPage)))
+                    root.speakIfEnabled("Seite " + (root.currentPage + 1) + " von " + Math.max(1, Math.ceil(pageIndicator.totalItems / grid.cardsPerPage)))
                 }
             }
         }
