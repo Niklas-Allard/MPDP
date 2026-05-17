@@ -13,13 +13,27 @@ ApplicationWindow {
     StackView {
         id: stack
         anchors.fill: parent
-        
-        initialItem: null 
+
+        initialItem: null
 
         Component.onCompleted: {
             stack.push("StartPage/main.qml")
             var win = Window.window
             if (win) win.showFullScreen()
+        }
+    }
+
+    // AltGr + S öffnet die Einstellungen.
+    // Hinweis: Windows liefert AltGr als Ctrl+Alt, daher die Sequenz "Ctrl+Alt+S".
+    Shortcut {
+        sequences: ["Ctrl+Alt+S"]
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            // Mehrfaches Pushen vermeiden
+            var current = stack.currentItem
+            if (!current || String(current.objectName) !== "settingsPage") {
+                stack.push("Settings/main.qml")
+            }
         }
     }
 }
