@@ -46,6 +46,11 @@ Item {
             delegate: Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                // Cover-Verhältnis 2:3 (Bild ist 2 breit zu 3 hoch).
+                // Greift nur, wenn die Karte sonst schlanker als 2:3 würde
+                // (z. B. einzelne Reihe, die sich über die volle Grid-Höhe streckt).
+                Layout.maximumHeight: width * 1.5
+                Layout.alignment: Qt.AlignTop
 
                 visible: index >= startPage.currentPage * grid.cardsPerPage &&
                          index < (startPage.currentPage + 1) * grid.cardsPerPage
