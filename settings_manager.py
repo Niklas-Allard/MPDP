@@ -60,6 +60,44 @@ class SettingsManager(QObject):
         "autoPlayNext": False,
     }
 
+    # Farbpaletten je Theme. Werden über die color*-Properties an QML
+    # weitergereicht (Window.palette + explizite Text-/Karten-Farben).
+    THEME_PALETTES = {
+        "light": {
+            "background": "#f5f5f5",
+            "text": "#202020",
+            "base": "#ffffff",
+            "button": "#e0e0e0",
+            "accent": "#1976d2",
+            "cardDirectory": "#e3f2fd",
+            "cardFile": "#f0f0f0",
+            "cardBorder": "#dddddd",
+            "cardText": "#202020",
+        },
+        "dark": {
+            "background": "#121212",
+            "text": "#ffffff",
+            "base": "#1e1e1e",
+            "button": "#2d2d2d",
+            "accent": "#bb86fc",
+            "cardDirectory": "#1e3a5f",
+            "cardFile": "#2a2a2a",
+            "cardBorder": "#444444",
+            "cardText": "#ffffff",
+        },
+        "highContrast": {
+            "background": "#000000",
+            "text": "#ffff00",
+            "base": "#000000",
+            "button": "#000000",
+            "accent": "#ffff00",
+            "cardDirectory": "#000000",
+            "cardFile": "#000000",
+            "cardBorder": "#ffffff",
+            "cardText": "#ffff00",
+        },
+    }
+
     def __init__(self):
         super().__init__()
         self._settings = QSettings(self.ORG_NAME, self.APP_NAME)
@@ -204,6 +242,48 @@ class SettingsManager(QObject):
     @theme.setter
     def theme(self, value):
         self._set("theme", str(value), self.themeChanged)
+
+    # ---- abgeleitete Theme-Farben (read-only, ändern sich mit dem Theme) -----
+    def _theme_color(self, key: str) -> str:
+        theme = self._get("theme", str)
+        palette = self.THEME_PALETTES.get(theme, self.THEME_PALETTES["light"])
+        return palette[key]
+
+    @Property(str, notify=themeChanged)
+    def colorBackground(self):
+        return self._theme_color("background")
+
+    @Property(str, notify=themeChanged)
+    def colorText(self):
+        return self._theme_color("text")
+
+    @Property(str, notify=themeChanged)
+    def colorBase(self):
+        return self._theme_color("base")
+
+    @Property(str, notify=themeChanged)
+    def colorButton(self):
+        return self._theme_color("button")
+
+    @Property(str, notify=themeChanged)
+    def colorAccent(self):
+        return self._theme_color("accent")
+
+    @Property(str, notify=themeChanged)
+    def colorCardDirectory(self):
+        return self._theme_color("cardDirectory")
+
+    @Property(str, notify=themeChanged)
+    def colorCardFile(self):
+        return self._theme_color("cardFile")
+
+    @Property(str, notify=themeChanged)
+    def colorCardBorder(self):
+        return self._theme_color("cardBorder")
+
+    @Property(str, notify=themeChanged)
+    def colorCardText(self):
+        return self._theme_color("cardText")
 
     # ---- Sprachausgabe -------------------------------------------------------
     @Property(bool, notify=ttsEnabledChanged)

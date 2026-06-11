@@ -7,6 +7,9 @@ Item {
     id: multiMediaPlayerPage
 
     property string mediaSource: ""
+    // Playlist der Dateien im selben Ordner + Position darin (für autoPlayNext)
+    property var playlist: []
+    property int playlistIndex: -1
     // aus QSettings, mit sinnvollem Fallback
     property int cursorHideTimeout: settingsManager ? settingsManager.cursorHideTimeout : 5000
 
@@ -20,7 +23,8 @@ Item {
         id: progressTimer
         interval: 5000
         repeat: true
-        running: settingsManager ? settingsManager.resumePlayback : true
+        // Fortschritt immer mitschreiben, damit "Fortsetzen" später greifen kann
+        running: true
         onTriggered: {
             if (typeof media_DB !== "undefined") {
                 media_DB.set_progress(multiMediaPlayerPage.mediaSource.replace("file:///", ""), Math.floor(mediaplayer.position / 1000))
@@ -47,6 +51,20 @@ Item {
             return 0
         }
         autoPlay: true
+
+        // "Nächste Datei automatisch": am Ende zum nächsten Eintrag der Playlist springen
+        onMediaStatusChanged: {
+            if (mediaStatus === MediaPlayer.EndOfMedia &&
+                    settingsManager && settingsManager.autoPlayNext &&
+                    multiMediaPlayerPage.playlistIndex >= 0 &&
+                    multiMediaPlayerPage.playlistIndex < multiMediaPlayerPage.playlist.length - 1) {
+                multiMediaPlayerPage.playlistIndex++
+                multiMediaPlayerPage.mediaSource = multiMediaPlayerPage.playlist[multiMediaPlayerPage.playlistIndex]
+                if (typeof media_DB !== "undefined") {
+                    media_DB.add_to_history(multiMediaPlayerPage.mediaSource.replace("file:///", ""))
+                }
+            }
+        }
     }
 
     // loads the saved position after a short delay to ensure media is ready
@@ -115,7 +133,9 @@ Item {
 
     Rectangle {
         id: controlBar
-        color: "#00000080"
+        // Bewusst kräftig dunkel (liegt über Video bzw. Fensterhintergrund),
+        // damit die hellen Icons/Texte in jedem Theme lesbar bleiben.
+        color: "#D8000000"
         radius: 10
         height: 60
         visible: mediaplayer.playbackState !== MediaPlayer.PlayingState
@@ -141,23 +161,17 @@ Item {
 
             Button {
                 icon.source: "../icons/back.svg"
-                icon.color: "white"
-                icon.width: 32
-                icon.height: 32
-                implicitWidth: 48
-                implicitHeight: 48
-                background: Rectangle { color: "transparent" }
+                icon.width: 24
+                icon.height: 24
                 onClicked: multiMediaPlayerPage.StackView.view.pop()
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
             Button {
                 icon.source: "../icons/home.svg"
-                icon.color: "white"
-                icon.width: 32
-                icon.height: 32
-                implicitWidth: 48
-                implicitHeight: 48
-                background: Rectangle { color: "transparent" }
+                icon.width: 24
+                icon.height: 24
                 onClicked: multiMediaPlayerPage.StackView.view.pop(null)
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
 
             // OFFIZIELLER QT SLIDER (funktioniert garantiert)

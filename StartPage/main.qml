@@ -16,17 +16,25 @@ Item {
         id: tts
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
-        Component.onCompleted: {
-            if (settingsManager.ttsVoice) {
-                var voices = availableVoices()
-                for (var i = 0; i < voices.length; i++) {
-                    if (voices[i].name === settingsManager.ttsVoice) {
-                        voice = voices[i]
-                        break
-                    }
+        Component.onCompleted: startPage.applyTtsVoice()
+    }
+
+    // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
+    function applyTtsVoice() {
+        if (settingsManager.ttsVoice) {
+            var voices = tts.availableVoices()
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].name === settingsManager.ttsVoice) {
+                    tts.voice = voices[i]
+                    break
                 }
             }
         }
+    }
+
+    Connections {
+        target: settingsManager
+        function onTtsVoiceChanged() { startPage.applyTtsVoice() }
     }
 
     function speakIfEnabled(text) {
@@ -39,6 +47,7 @@ Item {
         text: startPage.folderData ? startPage.folderData.name : "..."
         font.pixelSize: 20 * settingsManager.fontScale
         font.bold: true
+        color: settingsManager.colorText
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
@@ -77,8 +86,8 @@ Item {
                 }
 
                 radius: 10
-                color: "#e3f2fd"
-                border.color: "#ddd"
+                color: settingsManager.colorCardDirectory
+                border.color: settingsManager.colorCardBorder
 
                 MouseArea {
                     id: mouseAreaCard
@@ -120,6 +129,7 @@ Item {
                         text: "📁"
                         font.pixelSize: 40 * settingsManager.fontScale
                         Layout.alignment: Qt.AlignHCenter
+                        color: settingsManager.colorCardText
                     }
                     Text {
                         text: modelData.name
@@ -128,6 +138,7 @@ Item {
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
                         Layout.maximumWidth: parent.width
+                        color: settingsManager.colorCardText
                     }
                 }
             }
@@ -153,7 +164,7 @@ Item {
             property int totalItems: startPage.folderData && startPage.folderData.children
                                      ? startPage.folderData.children.length : 0
             text: (startPage.currentPage + 1) + " / " + Math.max(1, Math.ceil(totalItems / grid.cardsPerPage))
-            color: "#ffffffff"
+            color: settingsManager.colorText
             font.pixelSize: 16 * settingsManager.fontScale
             font.bold: true
 

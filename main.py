@@ -5,6 +5,7 @@ from pathlib import Path
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QResource, QFile, QCoreApplication
+from PySide6.QtQuickControls2 import QQuickStyle
 
 from fileHandler import fileHandler
 from media_DB import Media_DB
@@ -16,6 +17,11 @@ if __name__ == "__main__":
     QCoreApplication.setApplicationName(SettingsManager.APP_NAME)
 
     app = QGuiApplication(sys.argv)
+
+    # Material-Stil: honoriert die palette/Material-Attached-Properties und
+    # liefert damit konsistenten Hell-/Dunkel-/Kontrast-Modus über alle Controls.
+    QQuickStyle.setStyle("Material")
+
     engine = QQmlApplicationEngine()
 
     rcc_path = Path(__file__).resolve().parent / "resources.rcc"

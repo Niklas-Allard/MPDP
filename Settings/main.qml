@@ -28,6 +28,10 @@ Item {
         target: settingsManager
         function onMain_directories_changed() { reloadFromSettings() }
         function onGlobal_image_directory_changed() { reloadFromSettings() }
+        // ComboBoxen folgen nicht automatisch (currentIndex ist kein Binding) –
+        // daher nach Theme-/Sortierungswechsel bzw. Reset explizit nachziehen.
+        function onThemeChanged() { themeCombo.currentIndex = themeCombo.indexOfValue(settingsManager.theme) }
+        function onSortOrderChanged() { sortCombo.currentIndex = sortCombo.indexOfValue(settingsManager.sortOrder) }
     }
 
     Text {
@@ -35,7 +39,7 @@ Item {
         text: "Einstellungen"
         font.pixelSize: 24 * settingsManager.fontScale
         font.bold: true
-        color: "white"
+        color: settingsManager.colorText
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 16

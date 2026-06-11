@@ -23,6 +23,7 @@ Item {
         text: root.folderData ? root.folderData.name : "..."
         font.pixelSize: 20 * settingsManager.fontScale
         font.bold: true
+        color: settingsManager.colorText
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
@@ -32,17 +33,35 @@ Item {
         id: tts
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
-        Component.onCompleted: {
-            if (settingsManager.ttsVoice) {
-                var voices = availableVoices()
-                for (var i = 0; i < voices.length; i++) {
-                    if (voices[i].name === settingsManager.ttsVoice) {
-                        voice = voices[i]
-                        break
-                    }
+        Component.onCompleted: root.applyTtsVoice()
+    }
+
+    // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
+    function applyTtsVoice() {
+        if (settingsManager.ttsVoice) {
+            var voices = tts.availableVoices()
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].name === settingsManager.ttsVoice) {
+                    tts.voice = voices[i]
+                    break
                 }
             }
         }
+    }
+
+    // Lädt den aktuellen Ordner neu (z. B. nach Änderung von Sortierung/versteckte Dateien)
+    function reloadFolder() {
+        if (root.folderData && root.folderData.path) {
+            root.folderData = fileManager.path_to_dict(root.folderData.path)
+            root.currentPage = 0
+        }
+    }
+
+    Connections {
+        target: settingsManager
+        function onTtsVoiceChanged() { root.applyTtsVoice() }
+        function onShowHiddenFilesChanged() { root.reloadFolder() }
+        function onSortOrderChanged() { root.reloadFolder() }
     }
 
     function speakIfEnabled(text) {
@@ -82,8 +101,8 @@ Item {
                         index < (root.currentPage + 1) * grid.cardsPerPage
 
                 radius: 10
-                color: modelData.type === "directory" ? "#e3f2fd" : "#f0f0f0"
-                border.color: "#ddd"
+                color: modelData.type === "directory" ? settingsManager.colorCardDirectory : settingsManager.colorCardFile
+                border.color: settingsManager.colorCardBorder
                 clip: true // Verhindert, dass das Bild über die abgerundeten Ecken ragt
 
                 // 1. Hintergrundbild (nimmt den ganzen Platz ein)
@@ -109,8 +128,21 @@ Item {
                             })
                         } else if (modelData.path) {
                             var urlPath = "file:///" + modelData.path.replace(/\\/g, "/")
+                            // Playlist aus den Geschwister-Dateien bauen (für "Nächste Datei automatisch")
+                            var siblings = root.folderData && root.folderData.children ? root.folderData.children : []
+                            var playlist = []
+                            var startIndex = 0
+                            for (var i = 0; i < siblings.length; i++) {
+                                if (siblings[i].type === "file" && siblings[i].path) {
+                                    if (siblings[i].path === modelData.path)
+                                        startIndex = playlist.length
+                                    playlist.push("file:///" + siblings[i].path.replace(/\\/g, "/"))
+                                }
+                            }
                             root.StackView.view.push("../MultiMediaPlayer/main.qml", {
-                                "mediaSource": urlPath
+                                "mediaSource": urlPath,
+                                "playlist": playlist,
+                                "playlistIndex": startIndex
                             })
                             console.log("File:", modelData.name)
                         } else {
@@ -152,6 +184,7 @@ Item {
                         text: modelData.type === "directory" ? "📁" : "📄"
                         font.pixelSize: 40 * settingsManager.fontScale
                         Layout.alignment: Qt.AlignHCenter
+                        color: settingsManager.colorCardText
                     }
 
                     Text {
@@ -161,6 +194,7 @@ Item {
                         Layout.alignment: Qt.AlignHCenter
                         elide: Text.ElideRight
                         Layout.maximumWidth: card.width - 10
+                        color: settingsManager.colorCardText
                     }
                 }
 
@@ -229,7 +263,7 @@ Item {
             id: pageIndicator
             property int totalItems: root.folderData && root.folderData.children ? root.folderData.children.length : 0
             text: (root.currentPage + 1) + " / " + Math.max(1, Math.ceil(totalItems / grid.cardsPerPage))
-            color: "#ffffffff"
+            color: settingsManager.colorText
             font.pixelSize: 16 * settingsManager.fontScale
             font.bold: true
             MouseArea {
