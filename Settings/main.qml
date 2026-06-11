@@ -350,10 +350,29 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
+                        Label { text: "Video sofort abspielen"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.autoPlayOnOpen
+                            onToggled: settingsManager.autoPlayOnOpen = checked
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
                         Label { text: "Nächste Datei automatisch"; Layout.preferredWidth: 220 }
                         Switch {
                             checked: settingsManager.autoPlayNext
                             onToggled: settingsManager.autoPlayNext = checked
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Nächste Folge ansagen"; Layout.preferredWidth: 220 }
+                        Switch {
+                            enabled: settingsManager.autoPlayNext && settingsManager.ttsEnabled
+                            checked: settingsManager.announceNextFile
+                            onToggled: settingsManager.announceNextFile = checked
                         }
                     }
                 }

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtMultimedia
+import QtTextToSpeech
 
 Item {
     id: multiMediaPlayerPage
@@ -12,11 +13,57 @@ Item {
     property int playlistIndex: -1
     // aus QSettings, mit sinnvollem Fallback
     property int cursorHideTimeout: settingsManager ? settingsManager.cursorHideTimeout : 5000
+    // true, solange wir auf das Ende der TTS-Ansage warten, um dann das Video zu starten
+    property bool pendingPlay: false
 
     Component.onCompleted: {
         if (typeof media_DB !== "undefined") {
             media_DB.add_to_history(mediaSource.replace("file:///", ""))
         }
+    }
+
+    Component.onDestruction: tts.stop()
+
+    // Sprachausgabe für die Ansage der nächsten Folge
+    TextToSpeech {
+        id: tts
+        volume: settingsManager ? settingsManager.ttsVolume : 1.0
+        rate: settingsManager ? settingsManager.ttsRate : 0.0
+        Component.onCompleted: multiMediaPlayerPage.applyTtsVoice()
+
+        // Wenn die Ansage der nächsten Folge fertig ist, das Video starten
+        onStateChanged: {
+            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error) &&
+                    multiMediaPlayerPage.pendingPlay) {
+                multiMediaPlayerPage.pendingPlay = false
+                mediaplayer.play()
+            }
+        }
+    }
+
+    Connections {
+        target: settingsManager
+        function onTtsVoiceChanged() { multiMediaPlayerPage.applyTtsVoice() }
+    }
+
+    // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
+    function applyTtsVoice() {
+        if (settingsManager && settingsManager.ttsVoice) {
+            var voices = tts.availableVoices()
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].name === settingsManager.ttsVoice) {
+                    tts.voice = voices[i]
+                    break
+                }
+            }
+        }
+    }
+
+    // Liefert den reinen Dateinamen aus einer "file:///..."-Quelle
+    function fileNameFromSource(src) {
+        var s = decodeURIComponent(src.replace(/^file:\/{3}/, ""))
+        var parts = s.split("/")
+        return parts[parts.length - 1]
     }
 
     Timer {
@@ -50,7 +97,8 @@ Item {
             }
             return 0
         }
-        autoPlay: true
+        // Wiedergabe wird bewusst manuell gesteuert (Initial-Timer bzw. nach TTS-Ansage)
+        autoPlay: false
 
         // "Nächste Datei automatisch": am Ende zum nächsten Eintrag der Playlist springen
         onMediaStatusChanged: {
@@ -62,6 +110,17 @@ Item {
                 multiMediaPlayerPage.mediaSource = multiMediaPlayerPage.playlist[multiMediaPlayerPage.playlistIndex]
                 if (typeof media_DB !== "undefined") {
                     media_DB.add_to_history(multiMediaPlayerPage.mediaSource.replace("file:///", ""))
+                }
+
+                if (settingsManager && settingsManager.ttsEnabled && settingsManager.announceNextFile) {
+                    // Erst die nächste Folge ansagen – das Video startet, sobald die Ansage
+                    // fertig ist (siehe tts.onStateChanged), aber nur wenn "sofort abspielen" an ist.
+                    multiMediaPlayerPage.pendingPlay = !settingsManager || settingsManager.autoPlayOnOpen
+                    tts.say("Nächste Folge: " +
+                            multiMediaPlayerPage.fileNameFromSource(multiMediaPlayerPage.mediaSource))
+                } else if (!settingsManager || settingsManager.autoPlayOnOpen) {
+                    // Ohne Ansage: direkt weiterspielen
+                    mediaplayer.play()
                 }
             }
         }
@@ -81,7 +140,10 @@ Item {
                 }
             }
             audioOutput.muted = false
-            mediaplayer.play()
+            // Nur sofort starten, wenn die Einstellung es erlaubt – sonst pausiert lassen
+            if (!settingsManager || settingsManager.autoPlayOnOpen) {
+                mediaplayer.play()
+            }
         }
     }
 

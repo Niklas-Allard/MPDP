@@ -37,6 +37,8 @@ class SettingsManager(QObject):
     resumePlaybackChanged = Signal()
     cursorHideTimeoutChanged = Signal()
     autoPlayNextChanged = Signal()
+    announceNextFileChanged = Signal()
+    autoPlayOnOpenChanged = Signal()
 
     DEFAULTS = {
         # Darstellung
@@ -60,6 +62,8 @@ class SettingsManager(QObject):
         "resumePlayback": True,
         "cursorHideTimeout": 5000,  # ms
         "autoPlayNext": False,
+        "announceNextFile": True,   # nächste Folge per TTS ansagen
+        "autoPlayOnOpen": True,     # Video beim Öffnen sofort abspielen
     }
 
     # Farbpaletten je Theme. Werden über die color*-Properties an QML
@@ -394,6 +398,22 @@ class SettingsManager(QObject):
     def autoPlayNext(self, value):
         self._set("autoPlayNext", bool(value), self.autoPlayNextChanged)
 
+    @Property(bool, notify=announceNextFileChanged)
+    def announceNextFile(self):
+        return self._get("announceNextFile", bool)
+
+    @announceNextFile.setter
+    def announceNextFile(self, value):
+        self._set("announceNextFile", bool(value), self.announceNextFileChanged)
+
+    @Property(bool, notify=autoPlayOnOpenChanged)
+    def autoPlayOnOpen(self):
+        return self._get("autoPlayOnOpen", bool)
+
+    @autoPlayOnOpen.setter
+    def autoPlayOnOpen(self, value):
+        self._set("autoPlayOnOpen", bool(value), self.autoPlayOnOpenChanged)
+
     # ---- Reset ---------------------------------------------------------------
     @Slot()
     def reset_to_defaults(self):
@@ -413,5 +433,6 @@ class SettingsManager(QObject):
             self.sortOrderChanged, self.hideDisabledNavButtonsChanged,
             self.defaultVolumeChanged, self.resumePlaybackChanged,
             self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
+            self.announceNextFileChanged, self.autoPlayOnOpenChanged,
         ]:
             sig.emit()
