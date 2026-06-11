@@ -274,6 +274,15 @@ Item {
 
                     RowLayout {
                         Layout.fillWidth: true
+                        Label { text: "Deaktivierte Blättern-Buttons ausblenden"; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.hideDisabledNavButtons
+                            onToggled: settingsManager.hideDisabledNavButtons = checked
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
                         Label { text: "Sortierung"; Layout.preferredWidth: 220 }
                         ComboBox {
                             id: sortCombo

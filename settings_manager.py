@@ -31,6 +31,7 @@ class SettingsManager(QObject):
     openOnSingleClickChanged = Signal()
     showHiddenFilesChanged = Signal()
     sortOrderChanged = Signal()
+    hideDisabledNavButtonsChanged = Signal()
 
     defaultVolumeChanged = Signal()
     resumePlaybackChanged = Signal()
@@ -53,6 +54,7 @@ class SettingsManager(QObject):
         "openOnSingleClick": False,
         "showHiddenFiles": False,
         "sortOrder": "name_asc",  # name_asc | name_desc | date_desc | size_desc
+        "hideDisabledNavButtons": False,  # deaktivierte Blättern-Buttons unsichtbar (Platz bleibt)
         # Wiedergabe
         "defaultVolume": 1.0,
         "resumePlayback": True,
@@ -351,6 +353,14 @@ class SettingsManager(QObject):
     def sortOrder(self, value):
         self._set("sortOrder", str(value), self.sortOrderChanged)
 
+    @Property(bool, notify=hideDisabledNavButtonsChanged)
+    def hideDisabledNavButtons(self):
+        return self._get("hideDisabledNavButtons", bool)
+
+    @hideDisabledNavButtons.setter
+    def hideDisabledNavButtons(self, value):
+        self._set("hideDisabledNavButtons", bool(value), self.hideDisabledNavButtonsChanged)
+
     # ---- Wiedergabe ----------------------------------------------------------
     @Property(float, notify=defaultVolumeChanged)
     def defaultVolume(self):
@@ -400,7 +410,7 @@ class SettingsManager(QObject):
             self.ttsRateChanged, self.ttsVolumeChanged,
             self.clickSpeakDelayChanged,
             self.openOnSingleClickChanged, self.showHiddenFilesChanged,
-            self.sortOrderChanged,
+            self.sortOrderChanged, self.hideDisabledNavButtonsChanged,
             self.defaultVolumeChanged, self.resumePlaybackChanged,
             self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
         ]:

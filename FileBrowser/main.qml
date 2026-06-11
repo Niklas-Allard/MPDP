@@ -253,6 +253,8 @@ Item {
             icon.width: 24
             icon.height: 24
             enabled: root.currentPage > 0
+            // Unsichtbar machen, wenn deaktiviert und Einstellung aktiv – Platz bleibt erhalten
+            opacity: (!enabled && settingsManager.hideDisabledNavButtons) ? 0 : 1
             onClicked: root.currentPage--
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
@@ -282,6 +284,8 @@ Item {
             icon.height: 24
             property int totalItems: root.folderData && root.folderData.children ? root.folderData.children.length : 0
             enabled: root.currentPage < Math.ceil(totalItems / grid.cardsPerPage) - 1
+            // Unsichtbar machen, wenn deaktiviert und Einstellung aktiv – Platz bleibt erhalten
+            opacity: (!enabled && settingsManager.hideDisabledNavButtons) ? 0 : 1
             onClicked: root.currentPage++
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
