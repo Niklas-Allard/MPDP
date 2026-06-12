@@ -1,0 +1,458 @@
+{
+  "app": {
+    "title": "MPDP Dokumentation",
+    "githubLabel": "Auf GitHub ansehen"
+  },
+  "nav": {
+    "groupTitle": "Dokumentation",
+    "home": "Übersicht",
+    "architecture": "Architektur",
+    "setup": "Erste Schritte",
+    "usage": "Bedienung",
+    "accessibility": "Barrierefreiheit",
+    "development": "Entwicklung",
+    "userGuide": "Benutzerhandbuch",
+    "developerGuide": "Entwickler-Referenz"
+  },
+  "language": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "home": {
+    "badge": "MPDP",
+    "title": "Media Player For Disabled People",
+    "subtitle": "Ein barrierefreier Medienplayer für Menschen mit Einschränkungen",
+    "description": "MPDP ist eine Desktop-Anwendung auf Basis von PySide6 und Qt Quick (QML), die ein zugängliches Medien-Wiedergabeerlebnis bietet. Ziel des Projekts ist es, einen inklusiven Medienplayer mit intuitiver Dateinavigation, Wiedergabesteuerung und gezielten Barrierefreiheitsfunktionen zu schaffen.",
+    "goalsTitle": "Ziele des Projekts",
+    "goals": [
+      "Intuitive Dateinavigation für Nutzer mit unterschiedlichen Bedürfnissen",
+      "Klare, einfach bedienbare Wiedergabesteuerung",
+      "Vollständige Bildschirmleser-Kompatibilität aller UI-Elemente",
+      "Konsistente, anpassbare Themes für visuelle Zugänglichkeit"
+    ],
+    "techStackTitle": "Tech-Stack",
+    "techStack": [
+      { "label": "Frontend", "value": "Qt 6 / QML (Qt Quick)" },
+      { "label": "Backend", "value": "Python 3, PySide6" },
+      { "label": "Datenbank", "value": "SQLite" },
+      { "label": "Build-Tool", "value": "pysidedeploy" },
+      { "label": "Paketverwaltung", "value": "pip / requirements.txt" }
+    ],
+    "quickLinksTitle": "Wohin als Nächstes?",
+    "quickLinks": [
+      { "to": "/setup", "title": "Erste Schritte", "description": "Projekt einrichten und starten" },
+      { "to": "/architecture", "title": "Architektur", "description": "Aufbau von Backend, Frontend und Datenbank" },
+      { "to": "/usage", "title": "Bedienung", "description": "Dateibrowser und Medienplayer nutzen" },
+      { "to": "/accessibility", "title": "Barrierefreiheit", "description": "Funktionen für Menschen mit Behinderungen" }
+    ]
+  },
+  "architecture": {
+    "title": "Architektur",
+    "intro": "MPDP folgt einer klaren Trennung zwischen Python-Backend und QML-Frontend. Python-Objekte werden über den QML-Kontext an die Oberfläche angebunden und kommunizieren über Qts Signal-Slot-Mechanismus.",
+    "backendTitle": "Backend (Python)",
+    "backend": [
+      { "name": "main.py", "description": "Einstiegspunkt der Anwendung; initialisiert die QGuiApplication, lädt die QML-Engine und registriert die Context Properties." },
+      { "name": "media_DB.py", "description": "Datenbankschicht (SQLite) für Wiedergabefortschritt, Verlauf und Logging." },
+      { "name": "fileHandler.py", "description": "Dateisystem-Operationen und Navigation." },
+      { "name": "theme.py", "description": "Theme-Verwaltung und Styling-Konfiguration." }
+    ],
+    "frontendTitle": "Frontend (QML)",
+    "frontend": [
+      { "name": "main.qml", "description": "Wurzel-Anwendungsfenster mit StackView-Navigation." },
+      { "name": "StartPage/main.qml", "description": "Start- bzw. Landing-Screen der Anwendung." },
+      { "name": "FileBrowser/main.qml", "description": "UI-Komponente des Dateibrowsers." },
+      { "name": "MultiMediaPlayer/main.qml", "description": "Wiedergabesteuerung und Player-Oberfläche." },
+      { "name": "icons/", "description": "Icon-Ressourcen der Anwendung." }
+    ],
+    "databaseTitle": "Datenbank",
+    "database": [
+      { "name": "database/media.sqlite", "description": "SQLite-Datenbank mit den Tabellen log, media_progress und watch_history." },
+      { "name": "database/user_data.json", "description": "Benutzereinstellungen und Konfiguration." },
+      { "name": "database/themes/", "description": "Theme-Definitionen, z. B. classic.json." }
+    ],
+    "databaseTablesTitle": "Tabellen in media.sqlite",
+    "databaseTables": [
+      { "name": "log", "description": "Anwendungs-Logs." },
+      { "name": "media_progress", "description": "Wiedergabefortschritt für jede Mediendatei." },
+      { "name": "watch_history", "description": "Wiedergabeverlauf des Nutzers." }
+    ],
+    "resourcesTitle": "Ressourcen",
+    "resourcesText": "resources.rcc ist eine kompilierte Qt-Ressourcendatei, die Icons und weitere Assets enthält und in QML unter dem Pfad :/ eingebunden wird.",
+    "patternsTitle": "Wichtige Design-Patterns",
+    "patterns": [
+      {
+        "name": "Context Properties",
+        "description": "Python-Objekte werden über engine.rootContext().setContextProperty() an QML übergeben:",
+        "items": [
+          { "name": "fileManager", "description": "Dateinavigation und -operationen" },
+          { "name": "media_DB", "description": "Datenbankzugriff für Fortschritt und Verlauf" },
+          { "name": "mainDirs", "description": "Hauptverzeichnisstruktur aus der Datenbank" }
+        ]
+      },
+      {
+        "name": "Signal-Slot-Kommunikation",
+        "description": "Mit @Slot() dekorierte Python-Methoden können aus QML aufgerufen werden. Python-Signal-Objekte senden Events, auf die QML reagieren kann.",
+        "items": []
+      },
+      {
+        "name": "Navigation",
+        "description": "Die Navigation zwischen Seiten erfolgt über einen QML StackView (push/pop). QML-Dateien werden dynamisch vom Dateisystem geladen.",
+        "items": []
+      }
+    ]
+  },
+  "setup": {
+    "title": "Erste Schritte",
+    "intro": "Diese Seite beschreibt, wie das Projekt lokal eingerichtet und gestartet wird.",
+    "prereqTitle": "Voraussetzungen",
+    "prereq": [
+      "Python 3",
+      "pip",
+      "Eine virtuelle Umgebung wird empfohlen (z. B. venv)"
+    ],
+    "stepsTitle": "Installation",
+    "steps": [
+      {
+        "title": "Repository klonen",
+        "description": "Lade den Quellcode des Projekts herunter."
+      },
+      {
+        "title": "Virtuelle Umgebung aktivieren (Windows)",
+        "description": "Erstelle und aktiviere eine virtuelle Python-Umgebung, um Abhängigkeiten isoliert zu installieren.",
+        "code": ".venv\\Scripts\\Activate.ps1"
+      },
+      {
+        "title": "Abhängigkeiten installieren",
+        "description": "Installiere alle benötigten Python-Pakete aus requirements.txt.",
+        "code": "pip install -r requirements.txt"
+      },
+      {
+        "title": "Anwendung starten",
+        "description": "Startet die grafische Oberfläche mit PySide6.",
+        "code": "python main.py"
+      }
+    ],
+    "buildTitle": "Build für die Auslieferung",
+    "buildText": "Für das Erstellen einer auslieferbaren Anwendung wird die Konfiguration in pysidedeploy.spec verwendet."
+  },
+  "usage": {
+    "title": "Bedienung",
+    "intro": "MPDP besteht im Wesentlichen aus zwei Bereichen: dem Dateibrowser zur Navigation durch Medienverzeichnisse und dem Medienplayer zur Wiedergabe.",
+    "startTitle": "Startseite",
+    "startText": "Die Startseite (StartPage) ist der Einstiegspunkt der Anwendung und zeigt die Hauptverzeichnisse, die in der Datenbank hinterlegt sind (mainDirs). Von hier aus gelangst du in den Dateibrowser.",
+    "browserTitle": "Dateibrowser",
+    "browserText": "Der Dateibrowser (FileBrowser) ermöglicht die Navigation durch Ordner und Mediendateien. Die Navigation zwischen Ansichten erfolgt über einen StackView, sodass du jederzeit zur vorherigen Ansicht zurückkehren kannst.",
+    "browserFeatures": [
+      "Übersichtliche Listendarstellung von Ordnern und Dateien",
+      "Zurück-Navigation über den StackView",
+      "Schreibgeschützter Zugriff auf das Dateisystem über fileManager"
+    ],
+    "playerTitle": "Medienplayer",
+    "playerText": "Der MultiMediaPlayer bietet die Wiedergabesteuerung für ausgewählte Mediendateien.",
+    "playerFeatures": [
+      "Wiedergabe starten, pausieren und stoppen",
+      "Automatischer Videostart je nach Einstellung",
+      "Speicherung des Wiedergabefortschritts in media_progress",
+      "Eintrag in den Wiedergabeverlauf (watch_history)"
+    ],
+    "progressTitle": "Fortschritt & Verlauf",
+    "progressText": "Der Fortschritt jeder Mediendatei wird automatisch über media_DB in der SQLite-Datenbank gespeichert. Beim erneuten Öffnen einer Datei kann die Wiedergabe an der zuletzt gesehenen Stelle fortgesetzt werden."
+  },
+  "accessibility": {
+    "title": "Barrierefreiheit",
+    "intro": "Barrierefreiheit ist der zentrale Designgrundsatz von MPDP. Die Anwendung richtet sich gezielt an Nutzer mit unterschiedlichen Einschränkungen.",
+    "principlesTitle": "Grundprinzipien",
+    "principles": [
+      {
+        "title": "Bildschirmleser-Kompatibilität",
+        "description": "Alle UI-Elemente sollen mit Screenreadern kompatibel sein, damit sehbehinderte Nutzer die Anwendung vollständig bedienen können."
+      },
+      {
+        "title": "Responsive Layouts",
+        "description": "Anchors und Property-Bindings in QML sorgen für ein responsives Layout, das sich an unterschiedliche Bildschirmgrößen und Vergrößerungsstufen anpasst."
+      },
+      {
+        "title": "Anpassbare Themes",
+        "description": "Über die Theme-Verwaltung (theme.py) und JSON-basierte Theme-Definitionen lassen sich Farben und Kontraste an die Bedürfnisse der Nutzer anpassen."
+      },
+      {
+        "title": "Einfache Navigation",
+        "description": "Die StackView-basierte Navigation hält die Bedienstruktur flach und vorhersehbar, was die Orientierung erleichtert."
+      },
+      {
+        "title": "Wiedereinstieg ohne Suchen",
+        "description": "Durch automatisches Speichern von Wiedergabefortschritt und Verlauf müssen Nutzer nicht erneut nach zuletzt angesehenen Inhalten suchen."
+      }
+    ],
+    "contributingTitle": "Mitwirken",
+    "contributingText": "Beim Hinzufügen neuer UI-Elemente sollte stets geprüft werden, ob diese korrekt mit Bildschirmlesern funktionieren und ob Beschriftungen, Kontraste und Bedienreihenfolge nachvollziehbar sind."
+  },
+  "development": {
+    "title": "Entwicklung",
+    "intro": "Hinweise zu Code-Stil, Konventionen und der Projektstruktur für Mitwirkende.",
+    "codeStyleTitle": "Code-Stil & Regeln",
+    "codeStyle": [
+      "Sprache: Python 3 (PEP 8) für die Backend-Logik, QML (Qt Quick) für die Oberfläche",
+      "Einrückung: 4 Leerzeichen in Python-Dateien",
+      "Python-Klassen in PascalCase (z. B. Media_DB, fileHandler)",
+      "Python-Funktionen und -Variablen in snake_case (z. B. get_main_directories, set_progress)",
+      "QML-Komponenten erhalten beschreibende Namen (z. B. ApplicationWindow, StackView)",
+      "Type Hints werden verwendet, wo sinnvoll",
+      "Saubere Fehlerbehandlung bei Datei- und Datenbankzugriffen",
+      "Kommunikation zwischen Python und QML über Qt Signals und Slots"
+    ],
+    "notesTitle": "Wichtige Hinweise für die Entwicklung",
+    "notes": [
+      "QML-Modul-Registrierung: Die Anwendung registriert eine eigene Ressourcendatei (resources.rcc) für Icons und Assets.",
+      "Threading: Lang laufende Operationen (Datenbank, Datei-I/O) gehören nicht in den UI-Thread.",
+      "Barrierefreiheit: Dieses Projekt ist primär auf Barrierefreiheit ausgerichtet — alle UI-Elemente sollen Screenreader-kompatibel sein.",
+      "QML State Management: Anchors und Property-Bindings für responsive Layouts verwenden.",
+      "Datenbank-Transaktionen: Immer Context Manager (with sqlite3.connect()) für sichere Datenbankoperationen verwenden."
+    ],
+    "fileConventionsTitle": "Datei-Konventionen",
+    "fileConventions": [
+      "Python-Dateien verwenden die Endung .py",
+      "QML-Dateien verwenden die Endung .qml",
+      "Theme-Dateien liegen im JSON-Format vor",
+      "Projektmetadaten werden über pyproject.toml konfiguriert"
+    ]
+  },
+  "userGuide": {
+    "title": "Benutzerhandbuch",
+    "intro": "Diese Seite erklärt jede Funktion und jede Einstellung von MPDP im Detail – von der Startseite über den Dateibrowser bis zum Medienplayer.",
+    "sectionsTitle": "Bereiche der Anwendung",
+    "sections": [
+      {
+        "title": "Startseite",
+        "description": "Die Startseite zeigt die in den Einstellungen hinterlegten Hauptverzeichnisse als Karten in einem Raster an. Von hier aus gelangst du per Klick in den Dateibrowser des jeweiligen Verzeichnisses.",
+        "items": [
+          "Die Kartengröße richtet sich nach den Einstellungen „Karten-Mindestbreite“ und „Karten-Mindesthöhe“ – je größer diese Werte, desto weniger, aber größere Karten passen pro Zeile.",
+          "Ist „Öffnen mit Einfachklick“ aktiviert, öffnet ein einzelner Klick sofort den Dateibrowser für das Verzeichnis.",
+          "Ist die Option deaktiviert, liest ein einzelner Klick nach kurzer Verzögerung den Namen des Verzeichnisses per Sprachausgabe vor; ein Doppelklick öffnet es.",
+          "Passen nicht alle Verzeichnisse auf eine Seite, erscheinen Pfeil-Buttons zum Vor- und Zurückblättern.",
+          "Die Anzeige „Seite X / Y“ liest beim Anklicken per Sprachausgabe die aktuelle und die Gesamtanzahl der Seiten vor."
+        ]
+      },
+      {
+        "title": "Dateibrowser",
+        "description": "Der Dateibrowser zeigt den Inhalt eines Verzeichnisses als Raster aus Ordner- und Datei-Karten an. Ordner werden (außer bei Sortierung nach Größe) immer vor Dateien angezeigt.",
+        "items": [
+          "Jede Karte zeigt entweder ein Vorschaubild (Cover/Thumbnail) aus dem globalen Bilderverzeichnis oder ein Symbol (📁 für Ordner, 📄 für Dateien) zusammen mit dem Namen.",
+          "Klick auf einen Ordner öffnet eine neue Dateibrowser-Ansicht für diesen Ordner; die vorherige Ansicht bleibt im Verlauf erhalten.",
+          "Klick auf eine Datei öffnet den Medienplayer. Dabei wird automatisch eine Playlist aus allen abspielbaren Dateien im selben Ordner erstellt, sodass „Nächste Datei automatisch“ funktioniert.",
+          "Der „Zurück“-Button kehrt zur vorherigen Ansicht zurück, der „Home“-Button springt direkt zur Startseite.",
+          "Seitennavigation funktioniert wie auf der Startseite (Pfeil-Buttons + Sprachausgabe der Seitenzahl).",
+          "Versteckte Dateien (Namen mit Punkt am Anfang oder mit Windows-Versteckt-/System-Attribut) werden je nach Einstellung „Versteckte Dateien zeigen“ angezeigt oder ausgeblendet.",
+          "Ändert sich die Sortierung oder die Sichtbarkeit versteckter Dateien, wird die aktuelle Ansicht automatisch neu geladen."
+        ]
+      },
+      {
+        "title": "Medienplayer",
+        "description": "Der Medienplayer spielt die ausgewählte Video- oder Audiodatei ab und merkt sich automatisch den Fortschritt.",
+        "items": [
+          "Klick irgendwo auf das Video pausiert die Wiedergabe bzw. setzt sie fort.",
+          "Eine Steuerleiste am unteren Rand wird eingeblendet, solange die Wiedergabe pausiert ist. Sie enthält „Zurück“- und „Home“-Button, einen Schieberegler für die Wiedergabeposition sowie die Zeitanzeige (aktuelle Position / Gesamtdauer).",
+          "Während der Wiedergabe blendet sich der Mauszeiger nach der eingestellten Zeit („Cursor ausblenden nach“) automatisch aus, wenn keine Maus- oder Klickaktivität erfolgt, und erscheint bei Bewegung sofort wieder.",
+          "Der Wiedergabefortschritt wird alle 5 Sekunden automatisch in der Datenbank gespeichert.",
+          "Ist „Wiedergabe fortsetzen“ aktiviert, beginnt die Wiedergabe beim erneuten Öffnen einer Datei an der zuletzt gespeicherten Stelle.",
+          "Jede geöffnete Datei wird zusammen mit allen übergeordneten Ordnerpfaden im Wiedergabeverlauf vermerkt.",
+          "Ist „Nächste Datei automatisch“ aktiviert, springt der Player am Ende einer Datei zur nächsten Datei der Playlist. Ist zusätzlich „Nächste Folge ansagen“ aktiviert, wird zuerst der Dateiname per Sprachausgabe angesagt, bevor die Wiedergabe beginnt (sofern „Video sofort abspielen“ aktiv ist)."
+        ]
+      }
+    ],
+    "shortcutsTitle": "Tastenkürzel",
+    "shortcuts": [
+      { "keys": "Strg + Alt + S", "description": "Öffnet die Einstellungsseite. Unter Windows entspricht dies der Tastenkombination AltGr + S." }
+    ],
+    "settingsTitle": "Einstellungen im Detail",
+    "settingsIntro": "Alle Einstellungen werden sofort gespeichert und wirken sich live auf die Anwendung aus. Über den Button „Auf Standardwerte zurücksetzen“ am Ende der Seite lassen sich alle unten aufgeführten Werte (außer Hauptverzeichnisse und globales Bilderverzeichnis) auf ihre Vorgaben zurücksetzen.",
+    "settingsGroups": [
+      {
+        "title": "Darstellung & Barrierefreiheit",
+        "items": [
+          { "name": "Karten-Mindestbreite", "value": "100 – 400 px, Schritt 10 px · Standard: 150 px", "description": "Legt fest, wie breit die Karten im Raster der Startseite und des Dateibrowsers mindestens sein müssen. Je größer der Wert, desto weniger Karten passen in eine Zeile." },
+          { "name": "Karten-Mindesthöhe", "value": "100 – 400 px, Schritt 10 px · Standard: 150 px", "description": "Legt die Mindesthöhe der Karten fest. Gemeinsam mit der Mindestbreite bestimmt dieser Wert, wie viele Karten gleichzeitig auf einer Seite angezeigt werden." },
+          { "name": "Schriftgröße", "value": "0,8× – 2,0×, Schritt 0,1× · Standard: 1,0×", "description": "Skaliert sämtliche Schriftgrößen der Anwendung mit diesem Faktor. Besonders hilfreich für Menschen mit Sehbehinderung, um Texte größer darzustellen." },
+          { "name": "Farbschema", "value": "Hell / Dunkel / Hoher Kontrast · Standard: Hell", "description": "Bestimmt die komplette Farbpalette der Anwendung (Hintergrund, Text, Buttons, Karten, Akzentfarbe). „Hoher Kontrast“ verwendet ausschließlich Schwarz und Gelb für maximale Lesbarkeit bei Sehbehinderung." }
+        ]
+      },
+      {
+        "title": "Sprachausgabe (Text-to-Speech)",
+        "items": [
+          { "name": "Sprachausgabe aktiv", "value": "Ein/Aus · Standard: Ein", "description": "Schaltet die gesamte Sprachausgabe ein oder aus. Bei „Aus“ werden Namen, Seitenzahlen und Ansagen der nächsten Folge nicht mehr vorgelesen, und alle übrigen Sprachausgabe-Einstellungen sind deaktiviert." },
+          { "name": "Stimme", "value": "Liste der vom Betriebssystem bereitgestellten Stimmen", "description": "Wählt die Stimme aus, mit der Texte vorgelesen werden. Die Liste wird beim Öffnen der Einstellungen direkt vom System abgefragt und kann je nach installierten Sprachpaketen variieren." },
+          { "name": "Geschwindigkeit", "value": "-1,0 – 1,0, Schritt 0,1 · Standard: 0,0 (normal)", "description": "Steuert die Sprechgeschwindigkeit der Sprachausgabe. Negative Werte sprechen langsamer, positive Werte schneller als normal." },
+          { "name": "Lautstärke", "value": "0 – 100 %, Schritt 5 % · Standard: 100 %", "description": "Regelt die Lautstärke der Sprachausgabe unabhängig von der Wiedergabelautstärke des Medienplayers." },
+          { "name": "Probehören", "value": "Button", "description": "Spielt den Satz „Hallo, dies ist ein Test der Sprachausgabe.“ mit der aktuell gewählten Stimme, Geschwindigkeit und Lautstärke ab, ohne dass eine Speicherung nötig ist." },
+          { "name": "Verzögerung vor Sprechen", "value": "0 – 2000 ms, Schritt 50 ms · Standard: 400 ms", "description": "Bestimmt, wie lange nach einem einfachen Klick auf eine Karte gewartet wird, bevor der Name per Sprachausgabe vorgelesen wird. Nur relevant, wenn „Öffnen mit Einfachklick“ deaktiviert ist – ein Doppelklick innerhalb dieser Zeit öffnet die Karte stattdessen direkt." }
+        ]
+      },
+      {
+        "title": "Navigation & Interaktion",
+        "items": [
+          { "name": "Öffnen mit Einfachklick", "value": "Ein/Aus · Standard: Aus", "description": "Bestimmt das Klickverhalten auf Karten. Bei „Ein“ öffnet ein einzelner Klick sofort den Ordner bzw. die Datei. Bei „Aus“ löst ein einzelner Klick nach der eingestellten Verzögerung eine Sprachansage des Namens aus, während ein Doppelklick die Karte direkt öffnet." },
+          { "name": "Versteckte Dateien zeigen", "value": "Ein/Aus · Standard: Aus", "description": "Zeigt im Dateibrowser auch Dateien und Ordner an, deren Name mit einem Punkt beginnt oder die unter Windows als „versteckt“ bzw. „System“ markiert sind." },
+          { "name": "Deaktivierte Blättern-Buttons ausblenden", "value": "Ein/Aus · Standard: Aus", "description": "Wenn aktiviert, werden die Vor-/Zurück-Buttons für die Seitennavigation unsichtbar (statt nur grau/deaktiviert), sobald keine vorherige bzw. nächste Seite existiert. Der Platz für die Buttons bleibt dabei erhalten, damit sich das Layout nicht verschiebt." },
+          { "name": "Sortierung", "value": "Name (A→Z) / Name (Z→A) / Datum (neu zuerst) / Größe (groß zuerst) · Standard: Name (A→Z)", "description": "Legt die Reihenfolge von Ordnern und Dateien im Dateibrowser fest. Ordner werden bei den Sortierungen nach Name und Datum immer vor Dateien angezeigt; bei der Sortierung nach Größe werden Ordner alphabetisch angeordnet und Dateien nach Größe absteigend." }
+        ]
+      },
+      {
+        "title": "Medienwiedergabe",
+        "items": [
+          { "name": "Standardlautstärke", "value": "0 – 100 %, Schritt 5 % · Standard: 100 %", "description": "Legt die Lautstärke fest, mit der Videos und Audiodateien beim Öffnen wiedergegeben werden." },
+          { "name": "Wiedergabe fortsetzen", "value": "Ein/Aus · Standard: Ein", "description": "Wenn aktiviert, beginnt die Wiedergabe einer bereits zuvor geöffneten Datei automatisch an der zuletzt gespeicherten Position." },
+          { "name": "Cursor ausblenden nach", "value": "1 – 30 s, Schritt 0,5 s · Standard: 5 s", "description": "Bestimmt, nach welcher Zeit ohne Mausbewegung oder Klick der Mauszeiger während der Wiedergabe automatisch ausgeblendet wird." },
+          { "name": "Video sofort abspielen", "value": "Ein/Aus · Standard: Ein", "description": "Wenn aktiviert, startet die Wiedergabe einer Datei automatisch, sobald sie geöffnet wird. Bei „Aus“ bleibt das Video pausiert, bis manuell auf das Bild geklickt wird." },
+          { "name": "Nächste Datei automatisch", "value": "Ein/Aus · Standard: Aus", "description": "Wenn aktiviert, springt der Player am Ende einer Datei automatisch zur nächsten Datei in der Playlist desselben Ordners." },
+          { "name": "Nächste Folge ansagen", "value": "Ein/Aus · Standard: Ein (nur wirksam, wenn „Nächste Datei automatisch“ und „Sprachausgabe aktiv“ ebenfalls aktiv sind)", "description": "Wenn aktiviert, wird der Dateiname der nächsten Folge per Sprachausgabe angesagt, bevor sie automatisch gestartet wird." }
+        ]
+      }
+    ],
+    "imageDirTitle": "Globales Bilderverzeichnis (Cover/Thumbnails)",
+    "imageDirText": "Hier legst du einen Ordner fest, in dem Vorschaubilder für deine Hauptverzeichnisse, Unterordner und Dateien liegen. Damit ein Bild gefunden wird, muss es denselben Namen wie der zugehörige Ordner bzw. die Datei (ohne Dateiendung) tragen, z. B. „Filmname.jpg“ für eine Datei „Filmname.mp4“. Unterstützte Formate sind .jpg, .jpeg, .png, .webp, .bmp und .ico. Für Dateien wird zusätzlich der Name des übergeordneten Ordners als Vorschaubild verwendet, falls keine passende Datei gefunden wird. Über „Durchsuchen…“ lässt sich der Ordner per Dialog auswählen, „Speichern“ übernimmt den Pfad.",
+    "mainDirsTitle": "Hauptverzeichnisse",
+    "mainDirsText": "Diese Liste bestimmt, welche Verzeichnisse auf der Startseite als Karten angezeigt werden. Jeder Eintrag besteht aus einem frei wählbaren Namen und dem vollständigen Pfad zum Verzeichnis. Einträge können bearbeitet und mit „Speichern“ übernommen, mit „Entfernen“ gelöscht oder über die Felder am Ende der Liste mit „Hinzufügen“ neu angelegt werden.",
+    "resetTitle": "Zurücksetzen",
+    "resetText": "Der Button „Auf Standardwerte zurücksetzen“ setzt alle Einstellungen aus den obigen Gruppen wieder auf ihre Werksvorgaben. Die Hauptverzeichnisse und das globale Bilderverzeichnis bleiben dabei unverändert erhalten."
+  },
+  "devGuide": {
+    "title": "Entwickler-Referenz",
+    "intro": "Diese Seite beschreibt die öffentliche API der Python-Backend-Klassen sowie die Aufgaben der QML-Komponenten im Detail. Sie ergänzt die allgemeinen Hinweise auf der Seite „Entwicklung“.",
+    "contextTitle": "Context Properties",
+    "contextText": "Diese Python-Objekte werden in main.py per engine.rootContext().setContextProperty(...) registriert und stehen in jeder QML-Datei global zur Verfügung:",
+    "contextItems": [
+      { "name": "settingsManager", "description": "Instanz von SettingsManager – Zugriff auf alle Einstellungen und Theme-Farben." },
+      { "name": "fileManager", "description": "Instanz von fileHandler – liest Verzeichnisse und Dateien ein." },
+      { "name": "media_DB", "description": "Instanz von Media_DB – Fortschritt, Verlauf und Logging in SQLite." },
+      { "name": "mainDirs", "description": "Liste der Hauptverzeichnisse (Name + Pfad), wird bei Änderung über main_directories_changed automatisch aktualisiert." }
+    ],
+    "settingsManagerTitle": "SettingsManager (settings_manager.py)",
+    "settingsManagerIntro": "QObject-Unterklasse, die alle Einstellungen über QSettings (Registry unter Windows bzw. Konfigurationsdateien) speichert. Jede Einstellung ist als Qt Property mit zugehörigem changed-Signal implementiert, sodass QML automatisch auf Änderungen reagieren kann. Beim ersten Start werden vorhandene Daten aus der alten database/user_data.json einmalig übernommen.",
+    "settingsManagerProps": [
+      { "name": "cardMinWidth", "type": "int", "default": "150" },
+      { "name": "cardMinHeight", "type": "int", "default": "150" },
+      { "name": "fontScale", "type": "float", "default": "1.0" },
+      { "name": "theme", "type": "str", "default": "\"light\" (\"light\" | \"dark\" | \"highContrast\")" },
+      { "name": "ttsEnabled", "type": "bool", "default": "True" },
+      { "name": "ttsVoice", "type": "str", "default": "\"\"" },
+      { "name": "ttsRate", "type": "float", "default": "0.0 (-1.0 .. 1.0)" },
+      { "name": "ttsVolume", "type": "float", "default": "1.0 (0.0 .. 1.0)" },
+      { "name": "clickSpeakDelay", "type": "int", "default": "400 (ms)" },
+      { "name": "openOnSingleClick", "type": "bool", "default": "False" },
+      { "name": "showHiddenFiles", "type": "bool", "default": "False" },
+      { "name": "sortOrder", "type": "str", "default": "\"name_asc\" (name_asc | name_desc | date_desc | size_desc)" },
+      { "name": "hideDisabledNavButtons", "type": "bool", "default": "False" },
+      { "name": "defaultVolume", "type": "float", "default": "1.0 (0.0 .. 1.0)" },
+      { "name": "resumePlayback", "type": "bool", "default": "True" },
+      { "name": "cursorHideTimeout", "type": "int", "default": "5000 (ms)" },
+      { "name": "autoPlayNext", "type": "bool", "default": "False" },
+      { "name": "announceNextFile", "type": "bool", "default": "True" },
+      { "name": "autoPlayOnOpen", "type": "bool", "default": "True" }
+    ],
+    "settingsManagerColorsTitle": "Abgeleitete Theme-Farben (read-only)",
+    "settingsManagerColorsText": "Die folgenden Properties ändern sich automatisch mit der Einstellung theme und werden aus THEME_PALETTES gelesen: colorBackground, colorText, colorBase, colorButton, colorAccent, colorCardDirectory, colorCardFile, colorCardBorder, colorCardText. Sie lösen wie theme das Signal themeChanged aus.",
+    "settingsManagerMethodsTitle": "Methoden (Slots)",
+    "settingsManagerMethods": [
+      { "signature": "get_main_directories() -> list[dict]", "description": "Liefert die Liste der Hauptverzeichnisse als [{\"name\": ..., \"path\": ...}, ...]." },
+      { "signature": "set_main_directories(dirs: list)", "description": "Ersetzt die komplette Liste der Hauptverzeichnisse und sendet main_directories_changed." },
+      { "signature": "add_main_directory(name: str, path: str)", "description": "Fügt ein neues Hauptverzeichnis an und sendet main_directories_changed." },
+      { "signature": "remove_main_directory(index: int)", "description": "Entfernt das Hauptverzeichnis am angegebenen Index und sendet main_directories_changed." },
+      { "signature": "update_main_directory(index: int, name: str, path: str)", "description": "Aktualisiert Name und Pfad eines bestehenden Hauptverzeichnisses und sendet main_directories_changed." },
+      { "signature": "get_global_image_directory() -> str", "description": "Liefert den aktuell konfigurierten Pfad zum globalen Bilderverzeichnis." },
+      { "signature": "set_global_image_directory(path: str)", "description": "Speichert den Pfad zum globalen Bilderverzeichnis und sendet global_image_directory_changed." },
+      { "signature": "reset_to_defaults()", "description": "Setzt alle Einstellungen aus DEFAULTS zurück (außer Hauptverzeichnisse und globales Bilderverzeichnis) und sendet alle zugehörigen *Changed-Signale." }
+    ],
+    "fileHandlerTitle": "fileHandler (fileHandler.py)",
+    "fileHandlerIntro": "QObject-Unterklasse für schreibgeschützten Dateisystemzugriff. Erhält im Konstruktor eine Referenz auf den SettingsManager, um Sortierung, Anzeige versteckter Dateien und das globale Bilderverzeichnis zu berücksichtigen.",
+    "fileHandlerConst": "SUPPORTED_IMAGE_FORMATS = ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.ico'] – Liste der unterstützten Bildformate für Thumbnails, in Prioritätsreihenfolge.",
+    "fileHandlerMethods": [
+      { "signature": "path_to_dict(path: str) -> dict", "description": "Wandelt einen Dateisystempfad rekursiv in ein verschachteltes dict um: { name, type (\"directory\"|\"file\"), path, thumbnail, children?, size?, error? }. Für Verzeichnisse werden alle Kinder rekursiv eingelesen (gefiltert nach versteckten Dateien, sortiert nach sortOrder); für Dateien wird die Dateigröße ermittelt. Das Feld thumbnail enthält eine file://-URL zu einem passenden Bild aus dem globalen Bilderverzeichnis, falls vorhanden." },
+      { "signature": "_is_hidden(path: Path) -> bool", "description": "Interner Helfer. Liefert True, wenn der Dateiname mit „.“ beginnt oder die Datei unter Windows die Attribute HIDDEN oder SYSTEM gesetzt hat." },
+      { "signature": "_sort_children(items: list) -> list", "description": "Interner Helfer. Trennt Verzeichnisse und Dateien, sortiert beide gemäß settingsManager.sortOrder (Name auf-/absteigend, Änderungsdatum oder Größe) und gibt Verzeichnisse gefolgt von Dateien zurück." }
+    ],
+    "mediaDbTitle": "Media_DB (media_DB.py)",
+    "mediaDbIntro": "QObject-Unterklasse für den Zugriff auf die SQLite-Datenbank database/media.sqlite. Erstellt beim Start automatisch alle benötigten Tabellen, falls sie noch nicht existieren.",
+    "mediaDbTablesTitle": "Tabellen",
+    "mediaDbTables": [
+      { "name": "log", "columns": "id INTEGER PRIMARY KEY, msg TEXT, created_at TEXT", "description": "Allgemeines Anwendungs-Log." },
+      { "name": "media_progress", "columns": "id INTEGER PRIMARY KEY, media_path TEXT UNIQUE, progress INTEGER, updated_at TEXT", "description": "Wiedergabeposition (in Sekunden) je Mediendatei." },
+      { "name": "watch_history", "columns": "id INTEGER PRIMARY KEY, media_path TEXT UNIQUE, corresponding_media TEXT, created_at TEXT", "description": "Verlauf: jeder übergeordnete Ordnerpfad einer angesehenen Datei wird mit dem Pfad der zuletzt darin angesehenen Datei verknüpft." }
+    ],
+    "mediaDbMethodsTitle": "Methoden (Slots)",
+    "mediaDbMethods": [
+      { "signature": "log(msg: str)", "description": "Schreibt eine Nachricht in die log-Tabelle." },
+      { "signature": "set_progress(media_path: str, progress: float)", "description": "Speichert oder aktualisiert die Wiedergabeposition (in Sekunden) für eine Datei (UPSERT über media_path)." },
+      { "signature": "get_progress(media_path: str) -> int", "description": "Liefert die gespeicherte Wiedergabeposition in Sekunden, oder 0, falls noch kein Eintrag existiert." },
+      { "signature": "add_to_history(path: str)", "description": "Trägt die Datei in den Wiedergabeverlauf ein: für jeden übergeordneten Ordnerpfad (ermittelt über part_path_desc) wird ein Eintrag angelegt bzw. aktualisiert, der auf path verweist – so kann z. B. „zuletzt angesehen in diesem Ordner“ ermittelt werden." },
+      { "signature": "part_path_desc(path: str) -> list[str]", "description": "Liefert eine Liste aller übergeordneten Pfade eines Verzeichnisses, vom direkten Elternordner bis zur Wurzel (als POSIX-Pfade)." }
+    ],
+    "qmlTitle": "QML-Komponenten",
+    "qmlIntro": "Übersicht der wichtigsten QML-Dateien und ihrer Aufgaben.",
+    "qmlComponents": [
+      {
+        "name": "main.qml",
+        "description": "Wurzel-ApplicationWindow der Anwendung.",
+        "items": [
+          "Setzt den Material-Stil (QQuickStyle „Material“) und bindet Material.theme/background/foreground/accent sowie die Qt-Palette an die colorXxx-Properties von settingsManager, damit alle Controls konsistent eingefärbt werden.",
+          "Enthält den zentralen StackView, der beim Start StartPage/main.qml lädt und das Fenster in den Vollbildmodus versetzt.",
+          "Definiert den globalen Shortcut Strg+Alt+S, der die Einstellungsseite (Settings/main.qml) öffnet, sofern sie nicht bereits angezeigt wird."
+        ]
+      },
+      {
+        "name": "StartPage/main.qml",
+        "description": "Startbildschirm mit den Hauptverzeichnissen.",
+        "items": [
+          "Stellt mainDirs als Raster von Karten (GridLayout) dar; Spalten- und Zeilenanzahl ergeben sich aus cardMinWidth/cardMinHeight und der verfügbaren Fenstergröße.",
+          "Pro Karte regelt eine MouseArea Einfach-/Doppelklick gemäß openOnSingleClick und löst bei Bedarf nach clickSpeakDelay eine TTS-Ansage des Namens aus.",
+          "Klick auf eine Karte ruft fileManager.path_to_dict(pfad) auf und pusht FileBrowser/main.qml mit dem Ergebnis als folderData.",
+          "Eigene Seitennavigation (Pfeil-Buttons + Seitenanzeige) analog zum Dateibrowser."
+        ]
+      },
+      {
+        "name": "FileBrowser/main.qml",
+        "description": "Rekursive Ordneransicht.",
+        "items": [
+          "Zeigt root.folderData.children als Grid von Karten; Hintergrundbild wird aus modelData.thumbnail geladen, fällt bei Misserfolg auf 📁/📄-Emoji zurück.",
+          "Reagiert über Connections auf settingsManager.showHiddenFilesChanged und sortOrderChanged, indem reloadFolder() den aktuellen Ordner per fileManager.path_to_dict(...) neu lädt.",
+          "Klick auf einen Ordner pusht erneut FileBrowser/main.qml (rekursiv) mit dem Unterordner als folderData.",
+          "Klick auf eine Datei baut aus den Geschwister-Dateien des aktuellen Ordners eine playlist (Array von file://-URLs) und pusht MultiMediaPlayer/main.qml mit mediaSource, playlist und playlistIndex.",
+          "„Zurück“ ruft StackView.view.pop() auf, „Home“ ruft StackView.view.pop(null) auf, um zur ersten Seite (Startseite) zurückzukehren.",
+          "Eigene Seitennavigation wie auf der Startseite."
+        ]
+      },
+      {
+        "name": "MultiMediaPlayer/main.qml",
+        "description": "Wiedergabeseite für eine Mediendatei.",
+        "items": [
+          "Nutzt MediaPlayer + VideoOutput (QtMultimedia); audioOutput.volume ist an settingsManager.defaultVolume gebunden und startet stummgeschaltet, um ein kurzes Aufblitzen des Tons beim Laden zu vermeiden.",
+          "Beim Erstellen wird media_DB.add_to_history(...) für die aktuelle Datei aufgerufen; ein Timer schreibt alle 5 Sekunden media_DB.set_progress(...) mit der aktuellen Position.",
+          "Ist resumePlayback aktiv, wird die Startposition aus media_DB.get_progress(...) gelesen und nach einem kurzen Verzögerungs-Timer gesetzt; danach startet die Wiedergabe automatisch, falls autoPlayOnOpen aktiv ist.",
+          "onMediaStatusChanged erkennt MediaPlayer.EndOfMedia: ist autoPlayNext aktiv und es existiert ein nächster Playlist-Eintrag, wird mediaSource auf diesen gesetzt und media_DB.add_to_history(...) erneut aufgerufen. Ist zusätzlich announceNextFile und ttsEnabled aktiv, wird zunächst der Dateiname per TTS angesagt; das eigentliche Abspielen startet dann im onStateChanged-Handler der TextToSpeech-Komponente, sobald die Ansage beendet ist (und autoPlayOnOpen aktiv ist).",
+          "Eine MouseArea über dem gesamten Video schaltet bei Klick zwischen Play und Pause um und steuert über cursorHideTimer (Intervall = cursorHideTimeout) das automatische Ausblenden des Mauszeigers.",
+          "Die untere Steuerleiste (controlBar) ist nur sichtbar, solange playbackState nicht „Playing“ ist, und enthält Zurück-/Home-Buttons, einen Positions-Slider sowie eine Zeitanzeige."
+        ]
+      },
+      {
+        "name": "Settings/main.qml",
+        "description": "Einstellungsseite.",
+        "items": [
+          "Jeder Regler/Schalter ist direkt zweiseitig an die entsprechende Property von settingsManager gebunden: Anzeige liest den aktuellen Wert, onMoved/onToggled/onActivated schreibt ihn zurück (jede Änderung wird sofort über QSettings persistiert).",
+          "Eine separate TextToSpeech-Instanz (ttsProbe) liefert availableVoices() für die Stimmen-Combobox und spielt den Probehören-Text ab.",
+          "Über Connections auf settingsManager werden bei externen Änderungen (z. B. main_directories_changed) die lokalen Felder (mainDirsModel, Bilderverzeichnis-Textfeld, ComboBox-Auswahl) neu geladen.",
+          "Die Liste der Hauptverzeichnisse wird über einen Repeater editierbar dargestellt; Hinzufügen/Entfernen/Aktualisieren ruft die entsprechenden Slots von settingsManager auf.",
+          "Der „Zurück“-Button ruft StackView.view.pop() auf, um zur vorherigen Seite zurückzukehren."
+        ]
+      }
+    ],
+    "mainPyTitle": "main.py – Einstiegspunkt",
+    "mainPyItems": [
+      "Setzt Organisationsname/Anwendungsname für QSettings über QCoreApplication.setOrganizationName/setApplicationName (Werte aus SettingsManager.ORG_NAME / APP_NAME), damit alle Einstellungen unter demselben Schlüssel gespeichert werden.",
+      "Aktiviert den Qt-Quick-Stil „Material“ via QQuickStyle.setStyle(\"Material\").",
+      "Registriert resources.rcc als Qt-Ressource unter dem Pfad „:/“, sodass Icons über qrc:/... geladen werden können.",
+      "Erstellt SettingsManager, fileHandler und Media_DB und registriert sie als Context Properties (settingsManager, fileManager, media_DB).",
+      "Liest die Hauptverzeichnisse beim Start einmalig aus dem SettingsManager und registriert sie als mainDirs; bei main_directories_changed wird mainDirs automatisch neu gesetzt.",
+      "Lädt main.qml in die QQmlApplicationEngine und beendet den Prozess mit Fehlercode -1, falls das Laden fehlschlägt."
+    ]
+  }
+}

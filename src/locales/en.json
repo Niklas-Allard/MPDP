@@ -1,0 +1,458 @@
+{
+  "app": {
+    "title": "MPDP Documentation",
+    "githubLabel": "View on GitHub"
+  },
+  "nav": {
+    "groupTitle": "Documentation",
+    "home": "Overview",
+    "architecture": "Architecture",
+    "setup": "Getting Started",
+    "usage": "Usage",
+    "accessibility": "Accessibility",
+    "development": "Development",
+    "userGuide": "User Guide",
+    "developerGuide": "Developer Reference"
+  },
+  "language": {
+    "label": "Language",
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "home": {
+    "badge": "MPDP",
+    "title": "Media Player For Disabled People",
+    "subtitle": "An accessible media player for people with disabilities",
+    "description": "MPDP is a desktop application built with PySide6 and Qt Quick (QML) designed to provide an accessible media playback experience. The goal of the project is to create an inclusive media player with intuitive file browsing, media playback controls, and accessibility features tailored for users with disabilities.",
+    "goalsTitle": "Project goals",
+    "goals": [
+      "Intuitive file navigation for users with different needs",
+      "Clear, easy-to-use playback controls",
+      "Full screen-reader compatibility for all UI elements",
+      "Consistent, customizable themes for visual accessibility"
+    ],
+    "techStackTitle": "Tech stack",
+    "techStack": [
+      { "label": "Frontend", "value": "Qt 6 / QML (Qt Quick)" },
+      { "label": "Backend", "value": "Python 3, PySide6" },
+      { "label": "Database", "value": "SQLite" },
+      { "label": "Build tool", "value": "pysidedeploy" },
+      { "label": "Package manager", "value": "pip / requirements.txt" }
+    ],
+    "quickLinksTitle": "Where to next?",
+    "quickLinks": [
+      { "to": "/setup", "title": "Getting Started", "description": "Set up and run the project" },
+      { "to": "/architecture", "title": "Architecture", "description": "Backend, frontend and database structure" },
+      { "to": "/usage", "title": "Usage", "description": "Using the file browser and media player" },
+      { "to": "/accessibility", "title": "Accessibility", "description": "Features for people with disabilities" }
+    ]
+  },
+  "architecture": {
+    "title": "Architecture",
+    "intro": "MPDP follows a clear separation between the Python backend and the QML frontend. Python objects are exposed to the UI via the QML context and communicate using Qt's signal-slot mechanism.",
+    "backendTitle": "Backend (Python)",
+    "backend": [
+      { "name": "main.py", "description": "Application entry point; initializes the QGuiApplication, loads the QML engine and registers the context properties." },
+      { "name": "media_DB.py", "description": "Database layer (SQLite) for playback progress, watch history and logging." },
+      { "name": "fileHandler.py", "description": "File system operations and navigation." },
+      { "name": "theme.py", "description": "Theme management and styling configuration." }
+    ],
+    "frontendTitle": "Frontend (QML)",
+    "frontend": [
+      { "name": "main.qml", "description": "Root application window with StackView navigation." },
+      { "name": "StartPage/main.qml", "description": "Initial page / landing screen of the application." },
+      { "name": "FileBrowser/main.qml", "description": "File browser UI component." },
+      { "name": "MultiMediaPlayer/main.qml", "description": "Media playback controls and player interface." },
+      { "name": "icons/", "description": "Icon resources for the application." }
+    ],
+    "databaseTitle": "Database",
+    "database": [
+      { "name": "database/media.sqlite", "description": "SQLite database with the tables log, media_progress and watch_history." },
+      { "name": "database/user_data.json", "description": "User preferences and configuration." },
+      { "name": "database/themes/", "description": "Theme definitions, e.g. classic.json." }
+    ],
+    "databaseTablesTitle": "Tables in media.sqlite",
+    "databaseTables": [
+      { "name": "log", "description": "Application logs." },
+      { "name": "media_progress", "description": "Playback progress for each media file." },
+      { "name": "watch_history", "description": "User's watch history." }
+    ],
+    "resourcesTitle": "Resources",
+    "resourcesText": "resources.rcc is a compiled Qt resource file containing icons and other assets, mounted at the :/ path in QML.",
+    "patternsTitle": "Key design patterns",
+    "patterns": [
+      {
+        "name": "Context properties",
+        "description": "Python objects are exposed to QML via engine.rootContext().setContextProperty():",
+        "items": [
+          { "name": "fileManager", "description": "File navigation and operations" },
+          { "name": "media_DB", "description": "Database access for progress and history" },
+          { "name": "mainDirs", "description": "Main directory structure from the database" }
+        ]
+      },
+      {
+        "name": "Signal-slot communication",
+        "description": "Python methods decorated with @Slot() can be called from QML. Python Signal objects emit events that QML can react to.",
+        "items": []
+      },
+      {
+        "name": "Navigation",
+        "description": "Navigation between pages uses a QML StackView (push/pop). QML files are loaded dynamically from the filesystem.",
+        "items": []
+      }
+    ]
+  },
+  "setup": {
+    "title": "Getting Started",
+    "intro": "This page describes how to set up and run the project locally.",
+    "prereqTitle": "Prerequisites",
+    "prereq": [
+      "Python 3",
+      "pip",
+      "A virtual environment is recommended (e.g. venv)"
+    ],
+    "stepsTitle": "Installation",
+    "steps": [
+      {
+        "title": "Clone the repository",
+        "description": "Download the project source code."
+      },
+      {
+        "title": "Activate the virtual environment (Windows)",
+        "description": "Create and activate a Python virtual environment to install dependencies in isolation.",
+        "code": ".venv\\Scripts\\Activate.ps1"
+      },
+      {
+        "title": "Install dependencies",
+        "description": "Install all required Python packages from requirements.txt.",
+        "code": "pip install -r requirements.txt"
+      },
+      {
+        "title": "Run the application",
+        "description": "Launches the GUI with PySide6.",
+        "code": "python main.py"
+      }
+    ],
+    "buildTitle": "Build for deployment",
+    "buildText": "Building a deployable application uses the configuration in pysidedeploy.spec."
+  },
+  "usage": {
+    "title": "Usage",
+    "intro": "MPDP is essentially made up of two areas: the file browser for navigating media directories, and the media player for playback.",
+    "startTitle": "Start page",
+    "startText": "The start page (StartPage) is the entry point of the application and shows the main directories stored in the database (mainDirs). From here you navigate into the file browser.",
+    "browserTitle": "File browser",
+    "browserText": "The file browser (FileBrowser) lets you navigate through folders and media files. Navigation between views uses a StackView, so you can always return to the previous view.",
+    "browserFeatures": [
+      "Clear list view of folders and files",
+      "Back navigation via the StackView",
+      "Read-only access to the file system through fileManager"
+    ],
+    "playerTitle": "Media player",
+    "playerText": "The MultiMediaPlayer provides playback controls for the selected media file.",
+    "playerFeatures": [
+      "Start, pause and stop playback",
+      "Automatic video playback depending on the setting",
+      "Playback progress is stored in media_progress",
+      "Entries are added to the watch history (watch_history)"
+    ],
+    "progressTitle": "Progress & history",
+    "progressText": "The progress of every media file is automatically saved in the SQLite database via media_DB. When reopening a file, playback can resume from where you left off."
+  },
+  "accessibility": {
+    "title": "Accessibility",
+    "intro": "Accessibility is the central design principle of MPDP. The application specifically targets users with different disabilities.",
+    "principlesTitle": "Core principles",
+    "principles": [
+      {
+        "title": "Screen-reader compatibility",
+        "description": "All UI elements should be compatible with screen readers, so visually impaired users can fully operate the application."
+      },
+      {
+        "title": "Responsive layouts",
+        "description": "Anchors and property bindings in QML ensure a responsive layout that adapts to different screen sizes and zoom levels."
+      },
+      {
+        "title": "Customizable themes",
+        "description": "Theme management (theme.py) and JSON-based theme definitions allow colors and contrast to be adapted to users' needs."
+      },
+      {
+        "title": "Simple navigation",
+        "description": "StackView-based navigation keeps the interaction structure flat and predictable, making orientation easier."
+      },
+      {
+        "title": "Resuming without searching",
+        "description": "By automatically saving playback progress and history, users don't need to search again for recently watched content."
+      }
+    ],
+    "contributingTitle": "Contributing",
+    "contributingText": "When adding new UI elements, always check that they work correctly with screen readers and that labels, contrast and focus order are clear and predictable."
+  },
+  "development": {
+    "title": "Development",
+    "intro": "Notes on code style, conventions and project structure for contributors.",
+    "codeStyleTitle": "Code style & rules",
+    "codeStyle": [
+      "Language: Python 3 (PEP 8) for backend logic, QML (Qt Quick) for the UI",
+      "Indentation: 4 spaces in Python files",
+      "Python classes use PascalCase (e.g. Media_DB, fileHandler)",
+      "Python functions and variables use snake_case (e.g. get_main_directories, set_progress)",
+      "QML components get descriptive names (e.g. ApplicationWindow, StackView)",
+      "Type hints are used where applicable",
+      "Proper exception handling for file and database operations",
+      "Communication between Python and QML via Qt signals and slots"
+    ],
+    "notesTitle": "Important development notes",
+    "notes": [
+      "QML module registration: the application registers a custom resource file (resources.rcc) for icons and assets.",
+      "Threading: keep long-running operations (database, file I/O) off the UI thread.",
+      "Accessibility: this project is primarily focused on accessibility — all UI elements should be screen-reader compatible.",
+      "QML state management: use anchors and property bindings for responsive layouts.",
+      "Database transactions: always use context managers (with sqlite3.connect()) for safe database operations."
+    ],
+    "fileConventionsTitle": "File conventions",
+    "fileConventions": [
+      "Python files use the .py extension",
+      "QML files use the .qml extension",
+      "Theme files are in JSON format",
+      "Project metadata is configured via pyproject.toml"
+    ]
+  },
+  "userGuide": {
+    "title": "User Guide",
+    "intro": "This page explains every feature and every setting of MPDP in detail - from the home screen to the file browser and the media player.",
+    "sectionsTitle": "Areas of the application",
+    "sections": [
+      {
+        "title": "Home screen",
+        "description": "The home screen shows the main directories configured in the settings as cards in a grid. From here you can click into the file browser for each directory.",
+        "items": [
+          "Card size follows the \"Card minimum width\" and \"Card minimum height\" settings - the larger these values, the fewer (but bigger) cards fit per row.",
+          "If \"Open on single click\" is enabled, a single click immediately opens the file browser for the directory.",
+          "If it is disabled, a single click reads out the directory name via text-to-speech after a short delay; a double click opens it.",
+          "If not all directories fit on one page, arrow buttons appear to page forward and backward.",
+          "Clicking the \"Page X / Y\" indicator reads out the current and total page count via text-to-speech."
+        ]
+      },
+      {
+        "title": "File browser",
+        "description": "The file browser shows the contents of a directory as a grid of folder and file cards. Folders are always shown before files (except when sorting by size).",
+        "items": [
+          "Each card shows either a preview image (cover/thumbnail) from the global image directory, or an icon (📁 for folders, 📄 for files) together with the name.",
+          "Clicking a folder opens a new file browser view for that folder; the previous view remains in the navigation history.",
+          "Clicking a file opens the media player. A playlist of all playable files in the same folder is built automatically, so \"Auto-play next file\" works.",
+          "The \"Back\" button returns to the previous view, the \"Home\" button jumps straight back to the home screen.",
+          "Page navigation works just like on the home screen (arrow buttons + spoken page count).",
+          "Hidden files (names starting with a dot, or marked as hidden/system on Windows) are shown or hidden depending on the \"Show hidden files\" setting.",
+          "If the sort order or the visibility of hidden files changes, the current view is reloaded automatically."
+        ]
+      },
+      {
+        "title": "Media player",
+        "description": "The media player plays the selected video or audio file and automatically remembers your progress.",
+        "items": [
+          "Clicking anywhere on the video pauses or resumes playback.",
+          "A control bar at the bottom is shown while playback is paused. It contains \"Back\" and \"Home\" buttons, a slider for the playback position, and a time display (current position / total duration).",
+          "During playback, the mouse cursor automatically hides after the configured time (\"Hide cursor after\") when there is no mouse movement or click, and reappears immediately on movement.",
+          "Playback progress is saved to the database automatically every 5 seconds.",
+          "If \"Resume playback\" is enabled, reopening a file starts playback from the last saved position.",
+          "Every opened file is recorded in the watch history together with all of its parent folder paths.",
+          "If \"Auto-play next file\" is enabled, the player jumps to the next file in the playlist when one ends. If \"Announce next episode\" is also enabled, the file name is announced via text-to-speech before playback starts (provided \"Play video immediately\" is enabled)."
+        ]
+      }
+    ],
+    "shortcutsTitle": "Keyboard shortcuts",
+    "shortcuts": [
+      { "keys": "Ctrl + Alt + S", "description": "Opens the settings page. On Windows this corresponds to the AltGr + S key combination." }
+    ],
+    "settingsTitle": "Settings in detail",
+    "settingsIntro": "All settings are saved immediately and take effect live in the application. The \"Reset to defaults\" button at the end of the page resets all values listed below (except main directories and the global image directory) to their factory defaults.",
+    "settingsGroups": [
+      {
+        "title": "Appearance & accessibility",
+        "items": [
+          { "name": "Card minimum width", "value": "100 - 400 px, step 10 px · default: 150 px", "description": "Defines the minimum width of cards in the grid on the home screen and file browser. The larger the value, the fewer cards fit in a row." },
+          { "name": "Card minimum height", "value": "100 - 400 px, step 10 px · default: 150 px", "description": "Defines the minimum height of cards. Together with the minimum width, this determines how many cards are shown on a page at once." },
+          { "name": "Font size", "value": "0.8x - 2.0x, step 0.1x · default: 1.0x", "description": "Scales all font sizes in the application by this factor. Especially helpful for users with visual impairments who need larger text." },
+          { "name": "Color scheme", "value": "Light / Dark / High contrast · default: Light", "description": "Determines the entire color palette of the application (background, text, buttons, cards, accent color). \"High contrast\" uses only black and yellow for maximum readability for visually impaired users." }
+        ]
+      },
+      {
+        "title": "Text-to-speech",
+        "items": [
+          { "name": "Text-to-speech enabled", "value": "On/Off · default: On", "description": "Turns all text-to-speech output on or off. When \"Off\", names, page numbers and \"next episode\" announcements are no longer read out, and all other text-to-speech settings are disabled." },
+          { "name": "Voice", "value": "List of voices provided by the operating system", "description": "Selects the voice used to read out text. The list is queried directly from the system when the settings page is opened and may vary depending on installed language packs." },
+          { "name": "Speed", "value": "-1.0 - 1.0, step 0.1 · default: 0.0 (normal)", "description": "Controls the speaking rate of the text-to-speech engine. Negative values speak slower, positive values faster than normal." },
+          { "name": "Volume", "value": "0 - 100%, step 5% · default: 100%", "description": "Controls the volume of the text-to-speech output independently of the media player's playback volume." },
+          { "name": "Test", "value": "Button", "description": "Plays the sentence \"Hallo, dies ist ein Test der Sprachausgabe.\" with the currently selected voice, speed and volume, without needing to save first." },
+          { "name": "Delay before speaking", "value": "0 - 2000 ms, step 50 ms · default: 400 ms", "description": "Determines how long to wait after a single click on a card before its name is read out via text-to-speech. Only relevant if \"Open on single click\" is disabled - a double click within this time opens the card directly instead." }
+        ]
+      },
+      {
+        "title": "Navigation & interaction",
+        "items": [
+          { "name": "Open on single click", "value": "On/Off · default: Off", "description": "Determines the click behavior on cards. When \"On\", a single click immediately opens the folder or file. When \"Off\", a single click triggers a spoken announcement of the name after the configured delay, while a double click opens the card directly." },
+          { "name": "Show hidden files", "value": "On/Off · default: Off", "description": "Also shows files and folders in the file browser whose name starts with a dot, or that are marked as \"hidden\" or \"system\" on Windows." },
+          { "name": "Hide disabled navigation buttons", "value": "On/Off · default: Off", "description": "When enabled, the previous/next page buttons become invisible (instead of just greyed out) when there is no previous or next page. The space reserved for the buttons remains, so the layout doesn't shift." },
+          { "name": "Sort order", "value": "Name (A-Z) / Name (Z-A) / Date (newest first) / Size (largest first) · default: Name (A-Z)", "description": "Determines the order of folders and files in the file browser. Folders are always shown before files for name and date sorting; for size sorting, folders are arranged alphabetically and files by descending size." }
+        ]
+      },
+      {
+        "title": "Playback",
+        "items": [
+          { "name": "Default volume", "value": "0 - 100%, step 5% · default: 100%", "description": "Sets the volume at which videos and audio files are played back when opened." },
+          { "name": "Resume playback", "value": "On/Off · default: On", "description": "When enabled, reopening a previously watched file automatically resumes playback from the last saved position." },
+          { "name": "Hide cursor after", "value": "1 - 30 s, step 0.5 s · default: 5 s", "description": "Determines after how much time without mouse movement or clicks the mouse cursor is automatically hidden during playback." },
+          { "name": "Play video immediately", "value": "On/Off · default: On", "description": "When enabled, playback of a file starts automatically as soon as it is opened. When \"Off\", the video remains paused until you click on the image manually." },
+          { "name": "Auto-play next file", "value": "On/Off · default: Off", "description": "When enabled, the player automatically jumps to the next file in the playlist of the same folder when one file ends." },
+          { "name": "Announce next episode", "value": "On/Off · default: On (only effective when \"Auto-play next file\" and \"Text-to-speech enabled\" are also on)", "description": "When enabled, the file name of the next episode is announced via text-to-speech before it starts automatically." }
+        ]
+      }
+    ],
+    "imageDirTitle": "Global image directory (covers/thumbnails)",
+    "imageDirText": "Here you specify a folder containing preview images for your main directories, subfolders and files. For an image to be found, it must have the same name as its corresponding folder or file (without the file extension), e.g. \"MovieName.jpg\" for a file \"MovieName.mp4\". Supported formats are .jpg, .jpeg, .png, .webp, .bmp and .ico. For files, the name of the parent folder is also used as a fallback preview image if no matching file is found. Use \"Browse...\" to pick the folder via a dialog, and \"Save\" to apply the path.",
+    "mainDirsTitle": "Main directories",
+    "mainDirsText": "This list determines which directories are shown as cards on the home screen. Each entry consists of a freely chosen name and the full path to the directory. Entries can be edited and applied with \"Save\", deleted with \"Remove\", or newly created using the fields at the end of the list with \"Add\".",
+    "resetTitle": "Reset",
+    "resetText": "The \"Reset to defaults\" button resets all settings from the groups above to their factory defaults. The main directories and the global image directory remain unchanged."
+  },
+  "devGuide": {
+    "title": "Developer Reference",
+    "intro": "This page describes the public API of the Python backend classes as well as the responsibilities of the QML components in detail. It complements the general notes on the \"Development\" page.",
+    "contextTitle": "Context properties",
+    "contextText": "These Python objects are registered in main.py via engine.rootContext().setContextProperty(...) and are globally available in every QML file:",
+    "contextItems": [
+      { "name": "settingsManager", "description": "Instance of SettingsManager - access to all settings and theme colors." },
+      { "name": "fileManager", "description": "Instance of fileHandler - reads directories and files." },
+      { "name": "media_DB", "description": "Instance of Media_DB - progress, history and logging in SQLite." },
+      { "name": "mainDirs", "description": "List of main directories (name + path); automatically refreshed when main_directories_changed fires." }
+    ],
+    "settingsManagerTitle": "SettingsManager (settings_manager.py)",
+    "settingsManagerIntro": "A QObject subclass that stores all settings via QSettings (registry on Windows, or configuration files). Each setting is implemented as a Qt Property with a matching changed signal, so QML reacts to changes automatically. On first launch, existing data is migrated once from the legacy database/user_data.json.",
+    "settingsManagerProps": [
+      { "name": "cardMinWidth", "type": "int", "default": "150" },
+      { "name": "cardMinHeight", "type": "int", "default": "150" },
+      { "name": "fontScale", "type": "float", "default": "1.0" },
+      { "name": "theme", "type": "str", "default": "\"light\" (\"light\" | \"dark\" | \"highContrast\")" },
+      { "name": "ttsEnabled", "type": "bool", "default": "True" },
+      { "name": "ttsVoice", "type": "str", "default": "\"\"" },
+      { "name": "ttsRate", "type": "float", "default": "0.0 (-1.0 .. 1.0)" },
+      { "name": "ttsVolume", "type": "float", "default": "1.0 (0.0 .. 1.0)" },
+      { "name": "clickSpeakDelay", "type": "int", "default": "400 (ms)" },
+      { "name": "openOnSingleClick", "type": "bool", "default": "False" },
+      { "name": "showHiddenFiles", "type": "bool", "default": "False" },
+      { "name": "sortOrder", "type": "str", "default": "\"name_asc\" (name_asc | name_desc | date_desc | size_desc)" },
+      { "name": "hideDisabledNavButtons", "type": "bool", "default": "False" },
+      { "name": "defaultVolume", "type": "float", "default": "1.0 (0.0 .. 1.0)" },
+      { "name": "resumePlayback", "type": "bool", "default": "True" },
+      { "name": "cursorHideTimeout", "type": "int", "default": "5000 (ms)" },
+      { "name": "autoPlayNext", "type": "bool", "default": "False" },
+      { "name": "announceNextFile", "type": "bool", "default": "True" },
+      { "name": "autoPlayOnOpen", "type": "bool", "default": "True" }
+    ],
+    "settingsManagerColorsTitle": "Derived theme colors (read-only)",
+    "settingsManagerColorsText": "The following properties change automatically with the theme setting and are read from THEME_PALETTES: colorBackground, colorText, colorBase, colorButton, colorAccent, colorCardDirectory, colorCardFile, colorCardBorder, colorCardText. Like theme, they emit the themeChanged signal.",
+    "settingsManagerMethodsTitle": "Methods (slots)",
+    "settingsManagerMethods": [
+      { "signature": "get_main_directories() -> list[dict]", "description": "Returns the list of main directories as [{\"name\": ..., \"path\": ...}, ...]." },
+      { "signature": "set_main_directories(dirs: list)", "description": "Replaces the entire list of main directories and emits main_directories_changed." },
+      { "signature": "add_main_directory(name: str, path: str)", "description": "Appends a new main directory and emits main_directories_changed." },
+      { "signature": "remove_main_directory(index: int)", "description": "Removes the main directory at the given index and emits main_directories_changed." },
+      { "signature": "update_main_directory(index: int, name: str, path: str)", "description": "Updates the name and path of an existing main directory and emits main_directories_changed." },
+      { "signature": "get_global_image_directory() -> str", "description": "Returns the currently configured path to the global image directory." },
+      { "signature": "set_global_image_directory(path: str)", "description": "Saves the path to the global image directory and emits global_image_directory_changed." },
+      { "signature": "reset_to_defaults()", "description": "Resets all settings from DEFAULTS (except main directories and the global image directory) and emits all associated *Changed signals." }
+    ],
+    "fileHandlerTitle": "fileHandler (fileHandler.py)",
+    "fileHandlerIntro": "A QObject subclass for read-only filesystem access. Receives a reference to the SettingsManager in its constructor, in order to honor sort order, hidden-file visibility and the global image directory.",
+    "fileHandlerConst": "SUPPORTED_IMAGE_FORMATS = ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.ico'] - list of supported image formats for thumbnails, in priority order.",
+    "fileHandlerMethods": [
+      { "signature": "path_to_dict(path: str) -> dict", "description": "Recursively converts a filesystem path into a nested dict: { name, type (\"directory\"|\"file\"), path, thumbnail, children?, size?, error? }. For directories, all children are read recursively (filtered by hidden-file visibility, sorted by sortOrder); for files, the file size is determined. The thumbnail field contains a file:// URL to a matching image from the global image directory, if one exists." },
+      { "signature": "_is_hidden(path: Path) -> bool", "description": "Internal helper. Returns True if the file name starts with \".\" or the file has the HIDDEN or SYSTEM attribute set on Windows." },
+      { "signature": "_sort_children(items: list) -> list", "description": "Internal helper. Separates directories and files, sorts both according to settingsManager.sortOrder (ascending/descending name, modification date, or size) and returns directories followed by files." }
+    ],
+    "mediaDbTitle": "Media_DB (media_DB.py)",
+    "mediaDbIntro": "A QObject subclass providing access to the SQLite database database/media.sqlite. Automatically creates all required tables on startup if they don't already exist.",
+    "mediaDbTablesTitle": "Tables",
+    "mediaDbTables": [
+      { "name": "log", "columns": "id INTEGER PRIMARY KEY, msg TEXT, created_at TEXT", "description": "General application log." },
+      { "name": "media_progress", "columns": "id INTEGER PRIMARY KEY, media_path TEXT UNIQUE, progress INTEGER, updated_at TEXT", "description": "Playback position (in seconds) per media file." },
+      { "name": "watch_history", "columns": "id INTEGER PRIMARY KEY, media_path TEXT UNIQUE, corresponding_media TEXT, created_at TEXT", "description": "History: every parent folder path of a watched file is linked to the path of the most recently watched file within it." }
+    ],
+    "mediaDbMethodsTitle": "Methods (slots)",
+    "mediaDbMethods": [
+      { "signature": "log(msg: str)", "description": "Writes a message to the log table." },
+      { "signature": "set_progress(media_path: str, progress: float)", "description": "Saves or updates the playback position (in seconds) for a file (upsert on media_path)." },
+      { "signature": "get_progress(media_path: str) -> int", "description": "Returns the saved playback position in seconds, or 0 if no entry exists yet." },
+      { "signature": "add_to_history(path: str)", "description": "Records the file in the watch history: for every parent folder path (determined via part_path_desc), an entry is created or updated pointing to path - this allows e.g. determining the \"most recently watched\" file within a folder." },
+      { "signature": "part_path_desc(path: str) -> list[str]", "description": "Returns a list of all parent paths of a directory, from the immediate parent up to the root (as POSIX paths)." }
+    ],
+    "qmlTitle": "QML components",
+    "qmlIntro": "Overview of the most important QML files and their responsibilities.",
+    "qmlComponents": [
+      {
+        "name": "main.qml",
+        "description": "Root ApplicationWindow of the application.",
+        "items": [
+          "Sets the Material style (QQuickStyle \"Material\") and binds Material.theme/background/foreground/accent as well as the Qt palette to the colorXxx properties of settingsManager, so that all controls are themed consistently.",
+          "Contains the central StackView, which loads StartPage/main.qml on startup and puts the window into fullscreen mode.",
+          "Defines the global Ctrl+Alt+S shortcut, which opens the settings page (Settings/main.qml) unless it is already shown."
+        ]
+      },
+      {
+        "name": "StartPage/main.qml",
+        "description": "Home screen with the main directories.",
+        "items": [
+          "Displays mainDirs as a grid of cards (GridLayout); the number of columns and rows is derived from cardMinWidth/cardMinHeight and the available window size.",
+          "For each card, a MouseArea handles single/double click according to openOnSingleClick and, if applicable, triggers a TTS announcement of the name after clickSpeakDelay.",
+          "Clicking a card calls fileManager.path_to_dict(path) and pushes FileBrowser/main.qml with the result as folderData.",
+          "Has its own page navigation (arrow buttons + page indicator), analogous to the file browser."
+        ]
+      },
+      {
+        "name": "FileBrowser/main.qml",
+        "description": "Recursive folder view.",
+        "items": [
+          "Displays root.folderData.children as a grid of cards; the background image is loaded from modelData.thumbnail, falling back to a 📁/📄 emoji on failure.",
+          "Reacts to settingsManager.showHiddenFilesChanged and sortOrderChanged via Connections by reloading the current folder through reloadFolder(), which calls fileManager.path_to_dict(...).",
+          "Clicking a folder pushes FileBrowser/main.qml again (recursively) with the subfolder as folderData.",
+          "Clicking a file builds a playlist (array of file:// URLs) from the sibling files of the current folder and pushes MultiMediaPlayer/main.qml with mediaSource, playlist and playlistIndex.",
+          "\"Back\" calls StackView.view.pop(), \"Home\" calls StackView.view.pop(null) to return to the first page (home screen).",
+          "Has its own page navigation, just like the home screen."
+        ]
+      },
+      {
+        "name": "MultiMediaPlayer/main.qml",
+        "description": "Playback page for a media file.",
+        "items": [
+          "Uses MediaPlayer + VideoOutput (QtMultimedia); audioOutput.volume is bound to settingsManager.defaultVolume and starts muted to avoid a brief flash of sound while loading.",
+          "On creation, media_DB.add_to_history(...) is called for the current file; a timer writes media_DB.set_progress(...) with the current position every 5 seconds.",
+          "If resumePlayback is enabled, the starting position is read from media_DB.get_progress(...) and applied after a short delay timer; playback then starts automatically if autoPlayOnOpen is enabled.",
+          "onMediaStatusChanged detects MediaPlayer.EndOfMedia: if autoPlayNext is enabled and a next playlist entry exists, mediaSource is set to it and media_DB.add_to_history(...) is called again. If announceNextFile and ttsEnabled are also enabled, the file name is announced via TTS first; actual playback then starts in the TextToSpeech component's onStateChanged handler once the announcement finishes (and autoPlayOnOpen is enabled).",
+          "A MouseArea covering the whole video toggles between play and pause on click, and controls the automatic hiding of the mouse cursor via cursorHideTimer (interval = cursorHideTimeout).",
+          "The bottom control bar (controlBar) is only visible while playbackState is not \"Playing\", and contains Back/Home buttons, a position slider and a time display."
+        ]
+      },
+      {
+        "name": "Settings/main.qml",
+        "description": "Settings page.",
+        "items": [
+          "Each slider/switch is bound two-way directly to the corresponding settingsManager property: the display reads the current value, and onMoved/onToggled/onActivated writes it back (every change is persisted immediately via QSettings).",
+          "A separate TextToSpeech instance (ttsProbe) provides availableVoices() for the voice combo box and plays the test sentence.",
+          "Connections on settingsManager reload local fields (mainDirsModel, image directory text field, combo box selection) when external changes occur (e.g. main_directories_changed).",
+          "The list of main directories is rendered editable via a Repeater; adding/removing/updating calls the corresponding slots on settingsManager.",
+          "The \"Back\" button calls StackView.view.pop() to return to the previous page."
+        ]
+      }
+    ],
+    "mainPyTitle": "main.py - entry point",
+    "mainPyItems": [
+      "Sets the organization/application name for QSettings via QCoreApplication.setOrganizationName/setApplicationName (values from SettingsManager.ORG_NAME / APP_NAME), so all settings are stored under the same key.",
+      "Activates the \"Material\" Qt Quick style via QQuickStyle.setStyle(\"Material\").",
+      "Registers resources.rcc as a Qt resource under the path \":/\", so icons can be loaded via qrc:/...",
+      "Creates SettingsManager, fileHandler and Media_DB and registers them as context properties (settingsManager, fileManager, media_DB).",
+      "Reads the main directories from the SettingsManager once at startup and registers them as mainDirs; mainDirs is automatically refreshed when main_directories_changed fires.",
+      "Loads main.qml into the QQmlApplicationEngine and exits with error code -1 if loading fails."
+    ]
+  }
+}
