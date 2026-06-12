@@ -4,60 +4,60 @@
 ![PySide6](https://img.shields.io/badge/PySide6-Qt_Quick-41CD52?style=for-the-badge&logo=qt)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite)
 
-**MPDP** ist eine Desktop-Anwendung, die entwickelt wurde, um Menschen mit Behinderungen ein zugängliches, inklusives und intuitives Medienwiedergabe-Erlebnis zu bieten. 
-Das Projekt kombiniert eine leistungsstarke Python-Backend-Logik mit einer modernen, reaktionsschnellen Qt Quick (QML) Benutzeroberfläche.
+**MPDP** is a desktop application designed to provide an accessible, inclusive, and intuitive media playback experience for people with disabilities. 
+The project combines powerful Python backend logic with a modern, responsive Qt Quick (QML) user interface.
 
 ---
 
-## ✨ Hauptfunktionen
+## ✨ Key Features
 
-- ♿ **Barrierefreiheit im Fokus**: Speziell entwickelt für eine einfache und intuitive Bedienung.
-- 📁 **Integrierter Datei-Browser**: Reibungslose Navigation durch lokale Medien.
-- ⏯️ **Smarte Medienwiedergabe**: Automatische Speicherung des Wiedergabefortschritts und Verwaltung des Wiedergabeverlaufs (Watch History).
-- 🎨 **Theme-Unterstützung**: Anpassbare Benutzeroberfläche durch JSON-basierte Themes (z. B. `classic.json`).
-- 💾 **Lokale Datenbank**: Effiziente Datenspeicherung (Logs, Fortschritt, Historie) mittels SQLite.
-
----
-
-## 🛠️ Technologie-Stack
-
-- **Frontend**: Qt 6 / QML (Qt Quick) für flüssige und moderne UI-Komponenten.
-- **Backend**: Python 3 mit PySide6.
-- **Datenbank**: SQLite (`media.sqlite` für History & Fortschritt).
-- **Konfiguration**: JSON (User-Data & Themes).
+- ♿ **Accessibility First**: Specifically designed for easy and intuitive operation.
+- 📁 **Integrated File Browser**: Smooth navigation through local media files.
+- ⏯️ **Smart Media Playback**: Automatic saving of playback progress and management of watch history.
+- 🎨 **Theme Support**: Customizable user interface via JSON-based themes (e.g., `classic.json`).
+- 💾 **Local Database**: Efficient data storage (logs, progress, history) using SQLite.
 
 ---
 
-## 🏗️ Projektarchitektur
+## 🛠️ Technology Stack
 
-Das Projekt ist in klar strukturierte Module unterteilt, die Frontend und Backend trennen:
-
-*   **`main.py`**: Der Haupteinstiegspunkt. Initialisiert die App, lädt die QML-Engine und verbindet Python-Logik mit dem Frontend.
-*   **`media_DB.py`**: Interagiert mit der SQLite-Datenbank (Speichert den Wiedergabestatus, Historie und Logs).
-*   **`fileHandler.py`**: Übernimmt die Navigation und Verwaltung von Dateien im System.
-*   **`theme.py`**: Steuert die visuelle Darstellung und Themes.
-*   **Ordnerstruktur (QML)**:
-    *   `StartPage/` - Der Startbildschirm der Anwendung.
-    *   `FileBrowser/` - Visuelle Darstellung des Dateimanagements.
-    *   `MultiMediaPlayer/` - Die eigentlichen Player-Controls und das Interface.
+- **Frontend**: Qt 6 / QML (Qt Quick) for smooth and modern UI components.
+- **Backend**: Python 3 with PySide6.
+- **Database**: SQLite (`media.sqlite` for history & progress).
+- **Configuration**: JSON (user data & themes).
 
 ---
 
-## 🚀 Installation & Start
+## 🏗️ Project Architecture
 
-### Voraussetzungen
-- Python 3 installiert
-- Git (optional, zum Klonen des Repos)
+The project is divided into clearly structured modules separating frontend and backend:
 
-### Schritt-für-Schritt Anleitung
+*   **`main.py`**: The main entry point. Initializes the app, loads the QML engine, and connects Python logic to the frontend.
+*   **`media_DB.py`**: Interacts with the SQLite database (saves playback status, history, and logs).
+*   **`fileHandler.py`**: Handles file system navigation and management.
+*   **`theme.py`**: Controls visual representation and themes.
+*   **Folder Structure (QML)**:
+    *   `StartPage/` - The application's start screen.
+    *   `FileBrowser/` - Visual representation of file management.
+    *   `MultiMediaPlayer/` - The actual player controls and interface.
 
-1. **Repository klonen**
+---
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Python 3 installed
+- Git (optional, for cloning the repo)
+
+### Step-by-Step Guide
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/Niklas-Allard/MPDP.git
    cd MPDP
    ```
 
-2. **Virtuelle Umgebung erstellen und aktivieren (Empfohlen)**
+2. **Create and activate a virtual environment (Recommended)**
    *Windows:*
    ```bash
    python -m venv .venv
@@ -69,27 +69,27 @@ Das Projekt ist in klar strukturierte Module unterteilt, die Frontend und Backen
    source .venv/bin/activate
    ```
 
-3. **Abhängigkeiten installieren**
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Anwendung starten**
+4. **Run the application**
    ```bash
    python main.py
    ```
 
 ---
 
-## 🧑‍💻 Entwicklung & Build
+## 🧑‍💻 Development & Build
 
-- **Signale & Slots**: Das Projekt nutzt den Signal-Slot-Mechanismus von Qt, um nahtlos zwischen Python und QML zu kommunizieren. (Kontext-Properties wie `fileManager` und `media_DB` sind direkt in QML verfügbar).
-- **Ressourcen**: Grafiken und Icons werden über die kompilierte Ressourcen-Datei `resources.rcc` geladen.
-- **Build für Deployment**: Die App kann mithilfe der `pysidedeploy.spec` Konfiguration für die Veröffentlichung gebaut werden.
+- **Signals & Slots**: The project uses Qt's signal-slot mechanism for seamless communication between Python and QML. (Context properties like `fileManager` and `media_DB` are directly available in QML).
+- **Resources**: Graphics and icons are loaded via the compiled resource file `resources.rcc`.
+- **Build for Deployment**: The app can be built for release using the `pysidedeploy.spec` configuration.
 
 ---
 
-## 🤝 Mitwirken (Contributing)
+## 🤝 Contributing
 
-Da dieses Projekt auf Barrierefreiheit abzielt, sind Vorschläge zur Verbesserung der Accessibility (z. B. Screen-Reader-Kompatibilität, Kontrast-Updates oder Navigations-Erleichterungen) besonders willkommen!
-Erstelle gerne ein Issue oder eröffne einen Pull Request.
+Since this project aims at accessibility, suggestions to improve it (e.g., screen reader compatibility, contrast updates, or navigation simplifications) are especially welcome!
+Feel free to create an issue or open a pull request.
