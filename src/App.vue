@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import AppSidebar from '@/components/AppSidebar.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { Separator } from '@/components/ui/separator'
@@ -10,10 +11,12 @@ import {
 } from '@/components/ui/sidebar'
 
 const { t } = useI18n()
+const route = useRoute()
 </script>
 
 <template>
-  <SidebarProvider>
+  <router-view v-if="route.meta.standalone" />
+  <SidebarProvider v-else>
     <AppSidebar />
     <SidebarInset>
       <header

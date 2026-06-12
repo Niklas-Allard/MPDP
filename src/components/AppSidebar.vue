@@ -29,7 +29,7 @@ const { t } = useI18n()
 const route = useRoute()
 
 const items = [
-  { to: '/', icon: Home, key: 'home' },
+  { to: '/docs', icon: Home, key: 'home' },
   { to: '/architecture', icon: Network, key: 'architecture' },
   { to: '/setup', icon: Rocket, key: 'setup' },
   { to: '/usage', icon: PlaySquare, key: 'usage' },
@@ -46,7 +46,7 @@ const items = [
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
-            <router-link to="/">
+            <router-link to="/docs">
               <div
                 class="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg font-semibold"
               >

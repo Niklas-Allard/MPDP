@@ -454,5 +454,88 @@
       "Liest die Hauptverzeichnisse beim Start einmalig aus dem SettingsManager und registriert sie als mainDirs; bei main_directories_changed wird mainDirs automatisch neu gesetzt.",
       "Lädt main.qml in die QQmlApplicationEngine und beendet den Prozess mit Fehlercode -1, falls das Laden fehlschlägt."
     ]
+  },
+  "landing": {
+    "nav": {
+      "docs": "Dokumentation",
+      "github": "GitHub",
+      "tagline": "Media Player For Disabled People"
+    },
+    "hero": {
+      "badge": "Open Source · Barrierefrei · Kostenlos",
+      "acronym": "MPDP – Media Player For Disabled People",
+      "title": "Der Medienplayer, der wirklich für alle gemacht ist",
+      "subtitle": "MPDP bringt Filme, Serien und Videos auf den Bildschirm – mit Sprachausgabe, hohem Kontrast, großer Schrift und einer Bedienung, die immer gleich bleibt. Entwickelt für Menschen mit Seh-, Hör- oder motorischen Einschränkungen, angenehm für alle.",
+      "primaryCta": "Kostenlos auf GitHub ansehen",
+      "secondaryCta": "Dokumentation öffnen"
+    },
+    "trust": {
+      "items": [
+        "100 % Open Source",
+        "Komplett kostenlos, keine Werbung",
+        "Für Windows-Desktop",
+        "Gebaut mit Python, PySide6 & Qt Quick"
+      ]
+    },
+    "problem": {
+      "title": "Die meisten Medienplayer denken nicht an alle",
+      "intro": "Kleine Schrift, schwache Kontraste, verschachtelte Menüs und keine Sprachausgabe: Für viele Menschen ist das tägliche Anschauen von Filmen und Serien eine unnötige Hürde.",
+      "points": [
+        { "title": "Unleserliche Oberflächen", "description": "Geringe Kontraste und winzige Schrift erschweren die Bedienung für sehbehinderte Nutzer." },
+        { "title": "Keine Sprachausgabe", "description": "Ordner- und Dateinamen müssen erkannt werden, ohne dass sie vorgelesen werden." },
+        { "title": "Komplizierte Navigation", "description": "Tief verschachtelte Menüs und wechselnde Bedienkonzepte sorgen für Verwirrung." },
+        { "title": "Fortschritt geht verloren", "description": "Wer eine Folge unterbricht, muss die richtige Stelle oft mühsam wiederfinden." }
+      ]
+    },
+    "solution": {
+      "title": "MPDP wurde von Anfang an anders gedacht",
+      "text": "Statt Barrierefreiheit nachträglich aufzusetzen, ist sie der Ausgangspunkt: jede Oberfläche bildschirmleserfreundlich, jede Einstellung sofort wirksam, jede Bedienung vorhersehbar – egal ob mit Maus, Tastatur oder Sprachausgabe."
+    },
+    "features": {
+      "title": "Was MPDP besonders macht",
+      "subtitle": "Funktionen, die im Alltag wirklich einen Unterschied machen",
+      "items": [
+        { "icon": "Volume2", "title": "Integrierte Sprachausgabe", "description": "Ordner, Dateien und Seitenzahlen werden auf Wunsch laut vorgelesen – mit frei wählbarer Stimme, Geschwindigkeit und Lautstärke." },
+        { "icon": "Eye", "title": "Hoher Kontrast & Themes", "description": "Hell, Dunkel oder ein spezielles Schwarz-Gelb-Theme mit maximalem Kontrast für stark sehbehinderte Nutzer." },
+        { "icon": "Accessibility", "title": "Bildschirmleser-freundlich", "description": "Jedes UI-Element ist konsequent auf Kompatibilität mit Screenreadern ausgelegt." },
+        { "icon": "History", "title": "Fortschritt & Verlauf automatisch gespeichert", "description": "Wiedergabe wird alle 5 Sekunden gesichert – beim erneuten Öffnen geht es genau dort weiter, wo aufgehört wurde." },
+        { "icon": "ZoomIn", "title": "Alles individuell skalierbar", "description": "Schriftgröße, Kartengröße und Layout lassen sich stufenlos an die eigenen Bedürfnisse anpassen." },
+        { "icon": "MousePointerClick", "title": "Klare, gleichbleibende Bedienung", "description": "Einfach- oder Doppelklick, automatische nächste Folge mit Ansage – alles konfigurierbar, alles vorhersehbar." }
+      ]
+    },
+    "howItWorks": {
+      "title": "In drei Schritten startklar",
+      "steps": [
+        { "title": "Verzeichnisse hinzufügen", "description": "Trage deine Film- und Serienordner einmal in den Einstellungen ein – sie erscheinen sofort als Karten auf der Startseite." },
+        { "title": "Navigieren – auch per Sprache", "description": "Klicke dich durch Ordner und Dateien. Auf Wunsch liest MPDP Namen und Seitenzahlen automatisch vor." },
+        { "title": "Anschauen & weitermachen", "description": "Die Wiedergabe startet, der Fortschritt wird gespeichert – nächstes Mal geht es nahtlos weiter." }
+      ]
+    },
+    "mission": {
+      "title": "Warum es MPDP gibt",
+      "text": "MPDP entsteht, weil Zugänglichkeit kein nachträgliches Extra sein sollte, sondern die Grundlage jeder Anwendung. Das Projekt ist und bleibt Open Source – Beiträge, Ideen und Feedback aus der Community sind jederzeit willkommen."
+    },
+    "faq": {
+      "title": "Häufige Fragen",
+      "items": [
+        { "question": "Ist MPDP wirklich kostenlos?", "answer": "Ja. MPDP ist ein Open-Source-Projekt und kann kostenlos genutzt, verändert und weiterverbreitet werden." },
+        { "question": "Welche Plattform wird unterstützt?", "answer": "MPDP ist eine Desktop-Anwendung für Windows, gebaut mit Python und PySide6 (Qt)." },
+        { "question": "Brauche ich Vorkenntnisse, um MPDP zu nutzen?", "answer": "Nein. Die Einrichtung erfolgt über ein einfaches Einstellungsmenü, die Bedienung folgt klaren, wiederkehrenden Mustern." },
+        { "question": "Kann ich die Darstellung anpassen?", "answer": "Ja. Farbschema, Kontrast, Schriftgröße und Kartengrößen lassen sich jederzeit in den Einstellungen anpassen und wirken sofort." },
+        { "question": "Wie kann ich mitwirken?", "answer": "Das Projekt ist auf GitHub öffentlich. Issues, Pull Requests und Feedback sind herzlich willkommen." }
+      ]
+    },
+    "cta": {
+      "title": "Bereit, MPDP auszuprobieren?",
+      "subtitle": "Schau dir den Quellcode an, lies die Dokumentation oder richte MPDP direkt für deine eigene Mediensammlung ein.",
+      "primaryCta": "Auf GitHub ansehen",
+      "secondaryCta": "Zur Dokumentation"
+    },
+    "footer": {
+      "tagline": "MPDP – Media Player For Disabled People. Ein barrierefreies Open-Source-Projekt.",
+      "docsLabel": "Dokumentation",
+      "githubLabel": "GitHub",
+      "rights": "Open-Source-Projekt von Niklas Allard."
+    }
   }
 }

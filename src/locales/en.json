@@ -454,5 +454,88 @@
       "Reads the main directories from the SettingsManager once at startup and registers them as mainDirs; mainDirs is automatically refreshed when main_directories_changed fires.",
       "Loads main.qml into the QQmlApplicationEngine and exits with error code -1 if loading fails."
     ]
+  },
+  "landing": {
+    "nav": {
+      "docs": "Documentation",
+      "github": "GitHub",
+      "tagline": "Media Player For Disabled People"
+    },
+    "hero": {
+      "badge": "Open Source · Accessible · Free",
+      "acronym": "MPDP – Media Player For Disabled People",
+      "title": "The media player that's actually made for everyone",
+      "subtitle": "MPDP brings your movies, shows and videos to the screen - with voice narration, high contrast, large text and controls that never change. Built for people with visual, hearing or motor impairments, and pleasant for everyone else.",
+      "primaryCta": "View it for free on GitHub",
+      "secondaryCta": "Open documentation"
+    },
+    "trust": {
+      "items": [
+        "100% open source",
+        "Completely free, no ads",
+        "For Windows desktop",
+        "Built with Python, PySide6 & Qt Quick"
+      ]
+    },
+    "problem": {
+      "title": "Most media players don't think of everyone",
+      "intro": "Small text, weak contrast, deeply nested menus and no voice feedback: for many people, simply watching a movie or show is an unnecessary obstacle.",
+      "points": [
+        { "title": "Hard-to-read interfaces", "description": "Low contrast and tiny text make navigation difficult for people with visual impairments." },
+        { "title": "No voice narration", "description": "Folder and file names have to be recognized visually, with no spoken feedback." },
+        { "title": "Confusing navigation", "description": "Deeply nested menus and inconsistent controls make orientation hard." },
+        { "title": "Lost progress", "description": "Pausing an episode often means struggling to find the right spot again later." }
+      ]
+    },
+    "solution": {
+      "title": "MPDP was designed differently from day one",
+      "text": "Instead of bolting accessibility on afterwards, it's the starting point: every screen is screen-reader friendly, every setting takes effect instantly, and every interaction is predictable - whether you use a mouse, keyboard or voice feedback."
+    },
+    "features": {
+      "title": "What makes MPDP different",
+      "subtitle": "Features that make a real difference in everyday use",
+      "items": [
+        { "icon": "Volume2", "title": "Built-in voice narration", "description": "Folders, files and page numbers can be read aloud on demand, with a freely selectable voice, speed and volume." },
+        { "icon": "Eye", "title": "High contrast & themes", "description": "Light, dark, or a dedicated black-and-yellow theme with maximum contrast for users with significant visual impairments." },
+        { "icon": "Accessibility", "title": "Screen-reader friendly", "description": "Every UI element is consistently designed for compatibility with screen readers." },
+        { "icon": "History", "title": "Progress & history saved automatically", "description": "Playback position is saved every 5 seconds - reopen a file and pick up exactly where you left off." },
+        { "icon": "ZoomIn", "title": "Everything scales to your needs", "description": "Font size, card size and layout can be adjusted smoothly to fit your individual needs." },
+        { "icon": "MousePointerClick", "title": "Clear, consistent controls", "description": "Single or double click, automatic next episode with spoken announcement - all configurable, all predictable." }
+      ]
+    },
+    "howItWorks": {
+      "title": "Ready to go in three steps",
+      "steps": [
+        { "title": "Add your directories", "description": "Add your movie and show folders once in the settings - they immediately appear as cards on the home screen." },
+        { "title": "Navigate - by voice if you like", "description": "Click through folders and files. If enabled, MPDP automatically reads out names and page numbers." },
+        { "title": "Watch & continue later", "description": "Playback starts and progress is saved - next time it picks up right where you left off." }
+      ]
+    },
+    "mission": {
+      "title": "Why MPDP exists",
+      "text": "MPDP exists because accessibility shouldn't be an afterthought - it should be the foundation of every application. The project is, and will remain, open source: contributions, ideas and feedback from the community are always welcome."
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        { "question": "Is MPDP really free?", "answer": "Yes. MPDP is an open-source project and can be used, modified and redistributed free of charge." },
+        { "question": "Which platform is supported?", "answer": "MPDP is a desktop application for Windows, built with Python and PySide6 (Qt)." },
+        { "question": "Do I need any technical knowledge to use MPDP?", "answer": "No. Setup happens through a simple settings menu, and the controls follow clear, consistent patterns." },
+        { "question": "Can I customize the appearance?", "answer": "Yes. Color scheme, contrast, font size and card sizes can be adjusted at any time in the settings and take effect immediately." },
+        { "question": "How can I contribute?", "answer": "The project is public on GitHub. Issues, pull requests and feedback are very welcome." }
+      ]
+    },
+    "cta": {
+      "title": "Ready to try MPDP?",
+      "subtitle": "Check out the source code, read the documentation, or set up MPDP for your own media collection.",
+      "primaryCta": "View on GitHub",
+      "secondaryCta": "Go to documentation"
+    },
+    "footer": {
+      "tagline": "MPDP - Media Player For Disabled People. An accessible open-source project.",
+      "docsLabel": "Documentation",
+      "githubLabel": "GitHub",
+      "rights": "Open-source project by Niklas Allard."
+    }
   }
 }
