@@ -134,8 +134,9 @@ Item {
 
                 if (settingsManager && settingsManager.ttsEnabled && settingsManager.announceNextFile) {
                     multiMediaPlayerPage.pendingPlay = !settingsManager || settingsManager.autoPlayOnOpen
-                    var announceText = "Nächste Folge: " +
-                            multiMediaPlayerPage.fileNameFromSource(multiMediaPlayerPage.mediaSource)
+                    var fileName = regexFilter.apply(
+                            multiMediaPlayerPage.fileNameFromSource(multiMediaPlayerPage.mediaSource))
+                    var announceText = "Nächste Folge: " + fileName
                     tts.stop()
                     multiMediaPlayerPage._ttsQueue = []
                     if (settingsManager.ttsDashPauseEnabled && announceText.indexOf(" - ") >= 0) {

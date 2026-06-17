@@ -91,6 +91,7 @@ Item {
 
     function speakIfEnabled(text) {
         if (!settingsManager.ttsEnabled) return
+        text = regexFilter.apply(text)
         tts.stop()
         root._ttsQueue = []
         if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
