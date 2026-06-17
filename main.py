@@ -10,6 +10,7 @@ from PySide6.QtQuickControls2 import QQuickStyle
 from fileHandler import fileHandler
 from media_DB import Media_DB
 from settings_manager import SettingsManager
+from activity_monitor import ActivityMonitor
 
 if __name__ == "__main__":
     # Organisation/Anwendungsnamen setzen, damit QSettings konsistent funktioniert
@@ -28,6 +29,10 @@ if __name__ == "__main__":
     ok = QResource.registerResource(str(rcc_path), "/")  # mount unter :/
     print("registerResource:", ok)
     print("exists:", QFile.exists(":/icons/arrow_forward.png"))
+
+    # Globaler Aktivitäts-Detektor für den Bildschirmschoner
+    activity_monitor = ActivityMonitor(app)
+    engine.rootContext().setContextProperty("activityMonitor", activity_monitor)
 
     # Settings (QSettings-basiert) – ersetzt die alte user_data.json
     settings_manager = SettingsManager()

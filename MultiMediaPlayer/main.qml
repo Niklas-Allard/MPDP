@@ -8,6 +8,7 @@ Item {
     id: multiMediaPlayerPage
 
     property string mediaSource: ""
+    property bool isPlaying: mediaplayer.playbackState === MediaPlayer.PlayingState
     // Playlist der Dateien im selben Ordner + Position darin (für autoPlayNext)
     property var playlist: []
     property int playlistIndex: -1

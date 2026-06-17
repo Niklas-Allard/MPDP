@@ -40,6 +40,11 @@ class SettingsManager(QObject):
     announceNextFileChanged = Signal()
     autoPlayOnOpenChanged = Signal()
 
+    screensaverEnabledChanged = Signal()
+    screensaverTimeoutChanged = Signal()
+    screensaverImageDirectoryChanged = Signal()
+    screensaverImageIntervalChanged = Signal()
+
     DEFAULTS = {
         # Darstellung
         "cardMinWidth": 150,
@@ -64,6 +69,11 @@ class SettingsManager(QObject):
         "autoPlayNext": False,
         "announceNextFile": True,   # nächste Folge per TTS ansagen
         "autoPlayOnOpen": True,     # Video beim Öffnen sofort abspielen
+        # Bildschirmschoner
+        "screensaverEnabled": True,
+        "screensaverTimeout": 120000,       # ms bis Aktivierung (Standard: 2 Minuten)
+        "screensaverImageDirectory": "",    # Ordner mit Slideshow-Bildern
+        "screensaverImageInterval": 5000,   # ms pro Bild
     }
 
     # Farbpaletten je Theme. Werden über die color*-Properties an QML
@@ -414,6 +424,58 @@ class SettingsManager(QObject):
     def autoPlayOnOpen(self, value):
         self._set("autoPlayOnOpen", bool(value), self.autoPlayOnOpenChanged)
 
+    # ---- Bildschirmschoner ---------------------------------------------------
+    @Property(bool, notify=screensaverEnabledChanged)
+    def screensaverEnabled(self):
+        return self._get("screensaverEnabled", bool)
+
+    @screensaverEnabled.setter
+    def screensaverEnabled(self, value):
+        self._set("screensaverEnabled", bool(value), self.screensaverEnabledChanged)
+
+    @Property(int, notify=screensaverTimeoutChanged)
+    def screensaverTimeout(self):
+        return self._get("screensaverTimeout", int)
+
+    @screensaverTimeout.setter
+    def screensaverTimeout(self, value):
+        self._set("screensaverTimeout", int(value), self.screensaverTimeoutChanged)
+
+    @Property(str, notify=screensaverImageDirectoryChanged)
+    def screensaverImageDirectory(self):
+        return self._get("screensaverImageDirectory", str)
+
+    @screensaverImageDirectory.setter
+    def screensaverImageDirectory(self, value):
+        self._set("screensaverImageDirectory", str(value), self.screensaverImageDirectoryChanged)
+
+    @Property(int, notify=screensaverImageIntervalChanged)
+    def screensaverImageInterval(self):
+        return self._get("screensaverImageInterval", int)
+
+    @screensaverImageInterval.setter
+    def screensaverImageInterval(self, value):
+        self._set("screensaverImageInterval", int(value), self.screensaverImageIntervalChanged)
+
+    @Slot(result="QVariantList")
+    def get_screensaver_images(self) -> list:
+        """Gibt alle Bilddateien aus dem Bildschirmschoner-Verzeichnis als file://-URLs zurück."""
+        directory = self._get("screensaverImageDirectory", str)
+        if not directory:
+            return []
+        import os
+        from pathlib import Path
+        image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
+        try:
+            files = sorted(
+                Path(directory) / f
+                for f in os.listdir(directory)
+                if Path(f).suffix.lower() in image_extensions
+            )
+            return [p.as_uri() for p in files if p.is_file()]
+        except OSError:
+            return []
+
     # ---- Reset ---------------------------------------------------------------
     @Slot()
     def reset_to_defaults(self):
@@ -434,5 +496,7 @@ class SettingsManager(QObject):
             self.defaultVolumeChanged, self.resumePlaybackChanged,
             self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
             self.announceNextFileChanged, self.autoPlayOnOpenChanged,
+            self.screensaverEnabledChanged, self.screensaverTimeoutChanged,
+            self.screensaverImageDirectoryChanged, self.screensaverImageIntervalChanged,
         ]:
             sig.emit()
