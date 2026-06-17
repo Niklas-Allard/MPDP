@@ -40,6 +40,25 @@ Item {
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
         Component.onCompleted: root.applyTtsVoice()
+        onStateChanged: {
+            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
+                    && root._ttsQueue.length > 0) {
+                dashPauseTimer.start()
+            }
+        }
+    }
+
+    property var _ttsQueue: []
+
+    Timer {
+        id: dashPauseTimer
+        interval: settingsManager.ttsDashPauseDuration
+        repeat: false
+        onTriggered: {
+            if (root._ttsQueue.length > 0) {
+                tts.say(root._ttsQueue.shift())
+            }
+        }
     }
 
     // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
@@ -71,7 +90,16 @@ Item {
     }
 
     function speakIfEnabled(text) {
-        if (settingsManager.ttsEnabled) tts.say(text)
+        if (!settingsManager.ttsEnabled) return
+        tts.stop()
+        root._ttsQueue = []
+        if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
+            var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
+            root._ttsQueue = parts
+            if (root._ttsQueue.length > 0) tts.say(root._ttsQueue.shift())
+        } else {
+            tts.say(text)
+        }
     }
 
     Grid {

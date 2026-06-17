@@ -32,12 +32,31 @@ Item {
         rate: settingsManager ? settingsManager.ttsRate : 0.0
         Component.onCompleted: multiMediaPlayerPage.applyTtsVoice()
 
-        // Wenn die Ansage der nächsten Folge fertig ist, das Video starten
         onStateChanged: {
-            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error) &&
-                    multiMediaPlayerPage.pendingPlay) {
-                multiMediaPlayerPage.pendingPlay = false
-                mediaplayer.play()
+            if (state === TextToSpeech.Ready || state === TextToSpeech.Error) {
+                // Erst die Queue abarbeiten (Pausen bei " - ")
+                if (multiMediaPlayerPage._ttsQueue.length > 0) {
+                    dashPauseTimer.start()
+                    return
+                }
+                // Queue leer: Video starten wenn Ansage abgeschlossen
+                if (multiMediaPlayerPage.pendingPlay) {
+                    multiMediaPlayerPage.pendingPlay = false
+                    mediaplayer.play()
+                }
+            }
+        }
+    }
+
+    property var _ttsQueue: []
+
+    Timer {
+        id: dashPauseTimer
+        interval: settingsManager ? settingsManager.ttsDashPauseDuration : 400
+        repeat: false
+        onTriggered: {
+            if (multiMediaPlayerPage._ttsQueue.length > 0) {
+                tts.say(multiMediaPlayerPage._ttsQueue.shift())
             }
         }
     }
@@ -114,11 +133,18 @@ Item {
                 }
 
                 if (settingsManager && settingsManager.ttsEnabled && settingsManager.announceNextFile) {
-                    // Erst die nächste Folge ansagen – das Video startet, sobald die Ansage
-                    // fertig ist (siehe tts.onStateChanged), aber nur wenn "sofort abspielen" an ist.
                     multiMediaPlayerPage.pendingPlay = !settingsManager || settingsManager.autoPlayOnOpen
-                    tts.say("Nächste Folge: " +
-                            multiMediaPlayerPage.fileNameFromSource(multiMediaPlayerPage.mediaSource))
+                    var announceText = "Nächste Folge: " +
+                            multiMediaPlayerPage.fileNameFromSource(multiMediaPlayerPage.mediaSource)
+                    tts.stop()
+                    multiMediaPlayerPage._ttsQueue = []
+                    if (settingsManager.ttsDashPauseEnabled && announceText.indexOf(" - ") >= 0) {
+                        var parts = announceText.split(" - ").filter(function(s) { return s.trim().length > 0 })
+                        multiMediaPlayerPage._ttsQueue = parts
+                        tts.say(multiMediaPlayerPage._ttsQueue.shift())
+                    } else {
+                        tts.say(announceText)
+                    }
                 } else if (!settingsManager || settingsManager.autoPlayOnOpen) {
                     // Ohne Ansage: direkt weiterspielen
                     mediaplayer.play()

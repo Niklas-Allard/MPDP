@@ -26,6 +26,8 @@ class SettingsManager(QObject):
     ttsVoiceChanged = Signal()
     ttsRateChanged = Signal()
     ttsVolumeChanged = Signal()
+    ttsDashPauseEnabledChanged = Signal()
+    ttsDashPauseDurationChanged = Signal()
     clickSpeakDelayChanged = Signal()
 
     openOnSingleClickChanged = Signal()
@@ -56,6 +58,8 @@ class SettingsManager(QObject):
         "ttsVoice": "",
         "ttsRate": 0.0,        # -1.0 .. 1.0
         "ttsVolume": 1.0,      # 0.0 .. 1.0
+        "ttsDashPauseEnabled": True,
+        "ttsDashPauseDuration": 400,  # ms Pause nach " - "
         "clickSpeakDelay": 400,  # ms
         # Navigation
         "openOnSingleClick": False,
@@ -334,6 +338,22 @@ class SettingsManager(QObject):
     def ttsVolume(self, value):
         self._set("ttsVolume", float(value), self.ttsVolumeChanged)
 
+    @Property(bool, notify=ttsDashPauseEnabledChanged)
+    def ttsDashPauseEnabled(self):
+        return self._get("ttsDashPauseEnabled", bool)
+
+    @ttsDashPauseEnabled.setter
+    def ttsDashPauseEnabled(self, value):
+        self._set("ttsDashPauseEnabled", bool(value), self.ttsDashPauseEnabledChanged)
+
+    @Property(int, notify=ttsDashPauseDurationChanged)
+    def ttsDashPauseDuration(self):
+        return self._get("ttsDashPauseDuration", int)
+
+    @ttsDashPauseDuration.setter
+    def ttsDashPauseDuration(self, value):
+        self._set("ttsDashPauseDuration", int(value), self.ttsDashPauseDurationChanged)
+
     @Property(int, notify=clickSpeakDelayChanged)
     def clickSpeakDelay(self):
         return self._get("clickSpeakDelay", int)
@@ -490,6 +510,7 @@ class SettingsManager(QObject):
             self.fontScaleChanged, self.themeChanged,
             self.ttsEnabledChanged, self.ttsVoiceChanged,
             self.ttsRateChanged, self.ttsVolumeChanged,
+            self.ttsDashPauseEnabledChanged, self.ttsDashPauseDurationChanged,
             self.clickSpeakDelayChanged,
             self.openOnSingleClickChanged, self.showHiddenFilesChanged,
             self.sortOrderChanged, self.hideDisabledNavButtonsChanged,

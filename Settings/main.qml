@@ -15,6 +15,37 @@ Item {
         id: ttsProbe
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
+        onStateChanged: {
+            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
+                    && settingsPage._ttsQueue.length > 0) {
+                ttsPauseTimer.start()
+            }
+        }
+    }
+
+    property var _ttsQueue: []
+
+    Timer {
+        id: ttsPauseTimer
+        interval: settingsManager.ttsDashPauseDuration
+        repeat: false
+        onTriggered: {
+            if (settingsPage._ttsQueue.length > 0) {
+                ttsProbe.say(settingsPage._ttsQueue.shift())
+            }
+        }
+    }
+
+    function _speakTest(text) {
+        ttsProbe.stop()
+        settingsPage._ttsQueue = []
+        if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
+            var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
+            settingsPage._ttsQueue = parts
+            if (settingsPage._ttsQueue.length > 0) ttsProbe.say(settingsPage._ttsQueue.shift())
+        } else {
+            ttsProbe.say(text)
+        }
     }
 
     function reloadFromSettings() {
@@ -216,6 +247,31 @@ Item {
                         Label { text: Math.round(ttsVolSlider.value * 100) + " %"; Layout.preferredWidth: 50 }
                     }
 
+                    // Pause bei " - "
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Pause bei \" - \""; Layout.preferredWidth: 220 }
+                        Switch {
+                            checked: settingsManager.ttsDashPauseEnabled
+                            onToggled: settingsManager.ttsDashPauseEnabled = checked
+                        }
+                    }
+
+                    // Pausendauer bei " - "
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label { text: "Pausendauer bei \" - \""; Layout.preferredWidth: 220 }
+                        Slider {
+                            id: dashPauseSlider
+                            Layout.fillWidth: true
+                            enabled: settingsManager.ttsDashPauseEnabled && settingsManager.ttsEnabled
+                            from: 100; to: 2000; stepSize: 50
+                            value: settingsManager.ttsDashPauseDuration
+                            onMoved: settingsManager.ttsDashPauseDuration = value
+                        }
+                        Label { text: Math.round(dashPauseSlider.value) + " ms"; Layout.preferredWidth: 70 }
+                    }
+
                     // Test-Button
                     RowLayout {
                         Layout.fillWidth: true
@@ -223,7 +279,7 @@ Item {
                         Button {
                             text: "Probehören"
                             enabled: settingsManager.ttsEnabled
-                            onClicked: ttsProbe.say("Hallo, dies ist ein Test der Sprachausgabe.")
+                            onClicked: settingsPage._speakTest("Hallo - dies ist ein Test - der Sprachausgabe.")
                         }
                     }
 
