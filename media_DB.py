@@ -3,6 +3,8 @@ import sqlite3
 from pathlib import Path
 
 class Media_DB(QObject):
+    historyChanged = Signal()
+
     def __init__(self):
         super().__init__()
         db_path = Path(__file__).resolve().parent / "database" / "media.sqlite"
@@ -79,6 +81,18 @@ class Media_DB(QObject):
                         corresponding_media = excluded.corresponding_media,
                         created_at = datetime('now')
                 """, (p, path))
+        self.historyChanged.emit()
+
+    @Slot(str, result=str)
+    def get_last_played_in_folder(self, folder_path: str) -> str:
+        posix_path = Path(folder_path).as_posix()
+        with sqlite3.connect(self._db_path) as con:
+            cur = con.execute(
+                "SELECT corresponding_media FROM watch_history WHERE media_path = ?",
+                (posix_path,)
+            )
+            row = cur.fetchone()
+            return row[0] if row else ""
 
     def part_path_desc(self, path: str) -> list[str]:
         p = Path(path)

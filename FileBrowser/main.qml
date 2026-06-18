@@ -12,6 +12,19 @@ Item {
     property int minCardWidth: settingsManager.cardMinWidth
     property int minCardHeight: settingsManager.cardMinHeight
     property int currentPage: 0
+    property string lastPlayedFile: ""
+
+    Component.onCompleted: root.updateLastPlayed()
+
+    onFolderDataChanged: root.updateLastPlayed()
+
+    function updateLastPlayed() {
+        if (root.folderData && root.folderData.path && typeof media_DB !== "undefined") {
+            root.lastPlayedFile = media_DB.get_last_played_in_folder(root.folderData.path)
+        } else {
+            root.lastPlayedFile = ""
+        }
+    }
 
     Component.onDestruction: {
         tts.stop()
@@ -87,6 +100,11 @@ Item {
         function onTtsVoiceChanged() { root.applyTtsVoice() }
         function onShowHiddenFilesChanged() { root.reloadFolder() }
         function onSortOrderChanged() { root.reloadFolder() }
+    }
+
+    Connections {
+        target: media_DB
+        function onHistoryChanged() { root.updateLastPlayed() }
     }
 
     function speakIfEnabled(text) {
@@ -277,6 +295,43 @@ Item {
             icon.width: 24
             icon.height: 24
             onClicked: root.StackView.view.pop(null)
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
+        }
+
+        Button {
+            visible: root.lastPlayedFile !== ""
+            icon.source: "../icons/play.svg"
+            icon.width: 24
+            icon.height: 24
+            ToolTip.text: {
+                var parts = root.lastPlayedFile.replace(/\\/g, "/").split("/")
+                var name = parts[parts.length - 1]
+                var dot = name.lastIndexOf(".")
+                return dot > 0 ? name.substring(0, dot) : name
+            }
+            ToolTip.visible: hovered
+            ToolTip.delay: 400
+            onClicked: {
+                var filePath = root.lastPlayedFile.replace(/\\/g, "/")
+                var urlPath = "file:///" + filePath
+                var siblings = root.folderData && root.folderData.children ? root.folderData.children : []
+                var playlist = []
+                var startIndex = 0
+                for (var i = 0; i < siblings.length; i++) {
+                    if (siblings[i].type === "file" && siblings[i].path) {
+                        if (siblings[i].path.replace(/\\/g, "/") === filePath)
+                            startIndex = playlist.length
+                        playlist.push("file:///" + siblings[i].path.replace(/\\/g, "/"))
+                    }
+                }
+                root.StackView.view.push("../MultiMediaPlayer/main.qml", {
+                    "mediaSource": urlPath,
+                    "playlist": playlist,
+                    "playlistIndex": startIndex
+                })
+            }
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }
