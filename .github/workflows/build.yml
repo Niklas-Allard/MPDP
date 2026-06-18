@@ -65,9 +65,21 @@ jobs:
         run: |
           $env:PATH = "$PWD\.venv313\Scripts;$env:PATH"
           $env:VIRTUAL_ENV = "$PWD\.venv313"
-          pyside6-deploy -c pysidedeploy.spec main.py
+          pyside6-deploy -c pysidedeploy.spec main.py --extra-modules Multimedia,TextToSpeech --mode standalone
 
-      - name: Artifact verpacken (standalone → ZIP)
+      - name: Unnoetige Verzeichnisse aus dist entfernen
+        shell: pwsh
+        run: |
+          $distDir = Get-ChildItem dist -Directory | Select-Object -First 1
+          if ($distDir) {
+            # Verzeichnisse entfernen, die pyside6-deploy versehentlich einbindet
+            @('.venv313', '.venv', '.github', '.git', '__pycache__', 'deployment', 'build') | ForEach-Object {
+              $p = Join-Path $distDir.FullName $_
+              if (Test-Path $p) { Remove-Item $p -Recurse -Force }
+            }
+          }
+
+      - name: Artifact verpacken (standalone -> ZIP)
         shell: pwsh
         run: |
           $distDir = Get-ChildItem dist -Directory | Select-Object -First 1
@@ -129,19 +141,32 @@ jobs:
           $env:VIRTUAL_ENV = "$PWD\.venv313"
           pyside6-deploy -c build/pysidedeploy-windows-arm64.spec main.py
 
-      - name: Artifact umbenennen
+      - name: Unnoetige Verzeichnisse aus dist entfernen
         shell: pwsh
         run: |
-          $src = Get-ChildItem dist -Filter "*.exe" | Select-Object -First 1
-          if ($src) {
-            Rename-Item $src.FullName "MPDP-windows-arm64.exe"
+          $distDir = Get-ChildItem dist -Directory | Select-Object -First 1
+          if ($distDir) {
+            @('.venv313', '.venv', '.github', '.git', '__pycache__', 'deployment', 'build') | ForEach-Object {
+              $p = Join-Path $distDir.FullName $_
+              if (Test-Path $p) { Remove-Item $p -Recurse -Force }
+            }
+          }
+
+      - name: Artifact verpacken (standalone -> ZIP)
+        shell: pwsh
+        run: |
+          $distDir = Get-ChildItem dist -Directory | Select-Object -First 1
+          if ($distDir) {
+            Compress-Archive -Path $distDir.FullName -DestinationPath dist/MPDP-windows-arm64.zip
+          } else {
+            Write-Error "Kein dist-Verzeichnis gefunden!"; exit 1
           }
 
       - name: Artifact hochladen
         uses: actions/upload-artifact@v4
         with:
           name: MPDP-windows-arm64
-          path: dist/MPDP-windows-arm64.exe
+          path: dist/MPDP-windows-arm64.zip
           retention-days: 30
 
   # ───────────────────────────────────────────────────────────────────────────
@@ -165,7 +190,7 @@ jobs:
         run: |
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
-          .venv/bin/pip install PySide6 Nuitka
+          .venv/bin/pip install PySide6 "Nuitka==4.1"
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         run: |
@@ -180,21 +205,25 @@ jobs:
 
       - name: pyside6-deploy (macOS Intel, x86_64)
         run: |
-          # Kein --macos-target-arch=universal hier, da wir nur x86_64 bauen
-          .venv/bin/python3 -m pyside6deploy \
-            -c build/pysidedeploy-macos.spec \
-            --verbose
+          export PATH="$PWD/.venv/bin:$PATH"
+          export VIRTUAL_ENV="$PWD/.venv"
+          pyside6-deploy -c build/pysidedeploy-macos.spec main.py \
+            --extra-modules Multimedia,TextToSpeech --mode standalone
 
-      - name: Artifact umbenennen und verpacken
+      - name: Unnoetige Verzeichnisse bereinigen
         run: |
-          APP=$(find dist -name "*.app" | head -1)
-          if [ -n "$APP" ]; then
-            cd dist
-            zip -r MPDP-macos-x86_64.zip "$(basename "$APP")"
+          DIST=$(find dist -maxdepth 1 -type d ! -name dist | head -1)
+          for d in .venv .venv313 .github .git __pycache__ deployment build; do
+            rm -rf "$DIST/$d" 2>/dev/null || true
+          done
+
+      - name: Artifact verpacken
+        run: |
+          DIST=$(find dist -maxdepth 1 -type d ! -name dist | head -1)
+          if [ -n "$DIST" ]; then
+            cd dist && zip -r MPDP-macos-x86_64.zip "$(basename "$DIST")"
           else
-            # Fallback: raw binary
-            BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
-            mv "$BIN" dist/MPDP-macos-x86_64
+            echo "Kein dist-Verzeichnis!" && exit 1
           fi
 
       - name: Artifact hochladen
@@ -225,7 +254,7 @@ jobs:
         run: |
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
-          .venv/bin/pip install PySide6 Nuitka
+          .venv/bin/pip install PySide6 "Nuitka==4.1"
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         run: |
@@ -240,26 +269,32 @@ jobs:
 
       - name: pyside6-deploy (macOS ARM64)
         run: |
-          .venv/bin/python3 -m pyside6deploy \
-            -c build/pysidedeploy-macos.spec \
-            --verbose
+          export PATH="$PWD/.venv/bin:$PATH"
+          export VIRTUAL_ENV="$PWD/.venv"
+          pyside6-deploy -c build/pysidedeploy-macos.spec main.py \
+            --extra-modules Multimedia,TextToSpeech --mode standalone
 
-      - name: Artifact umbenennen und verpacken
+      - name: Unnoetige Verzeichnisse bereinigen
         run: |
-          APP=$(find dist -name "*.app" | head -1)
-          if [ -n "$APP" ]; then
-            cd dist
-            zip -r MPDP-macos-arm64.zip "$(basename "$APP")"
+          DIST=$(find dist -maxdepth 1 -type d ! -name dist | head -1)
+          for d in .venv .venv313 .github .git __pycache__ deployment build; do
+            rm -rf "$DIST/$d" 2>/dev/null || true
+          done
+
+      - name: Artifact verpacken
+        run: |
+          DIST=$(find dist -maxdepth 1 -type d ! -name dist | head -1)
+          if [ -n "$DIST" ]; then
+            cd dist && zip -r MPDP-macos-arm64.zip "$(basename "$DIST")"
           else
-            BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
-            mv "$BIN" dist/MPDP-macos-arm64
+            echo "Kein dist-Verzeichnis!" && exit 1
           fi
 
       - name: Artifact hochladen
         uses: actions/upload-artifact@v4
         with:
           name: MPDP-macos-arm64
-          path: dist/MPDP-macos-arm64*
+          path: dist/MPDP-macos-arm64.zip
           retention-days: 30
 
   # ───────────────────────────────────────────────────────────────────────────
@@ -355,7 +390,7 @@ jobs:
         run: |
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
-          .venv/bin/pip install PySide6 Nuitka
+          .venv/bin/pip install PySide6 "Nuitka==4.1"
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         run: |
@@ -370,20 +405,32 @@ jobs:
 
       - name: pyside6-deploy (Linux x86_64)
         run: |
-          .venv/bin/python3 -m pyside6deploy \
-            -c build/pysidedeploy-linux.spec \
-            --verbose
+          export PATH="$PWD/.venv/bin:$PATH"
+          export VIRTUAL_ENV="$PWD/.venv"
+          pyside6-deploy -c build/pysidedeploy-linux.spec main.py \
+            --extra-modules Multimedia,TextToSpeech --mode standalone
 
-      - name: Artifact umbenennen
+      - name: Unnoetige Verzeichnisse bereinigen
         run: |
-          BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
-          [ -n "$BIN" ] && mv "$BIN" dist/MPDP-linux-x86_64
+          DIST=$(find dist -maxdepth 1 -type d ! -name dist | head -1)
+          for d in .venv .venv313 .github .git __pycache__ deployment build; do
+            rm -rf "$DIST/$d" 2>/dev/null || true
+          done
+
+      - name: Artifact verpacken
+        run: |
+          DIST=$(find dist -maxdepth 1 -type d ! -name dist | head -1)
+          if [ -n "$DIST" ]; then
+            cd dist && zip -r MPDP-linux-x86_64.zip "$(basename "$DIST")"
+          else
+            echo "Kein dist-Verzeichnis!" && exit 1
+          fi
 
       - name: Artifact hochladen
         uses: actions/upload-artifact@v4
         with:
           name: MPDP-linux-x86_64
-          path: dist/MPDP-linux-x86_64
+          path: dist/MPDP-linux-x86_64.zip
           retention-days: 30
 
   # ───────────────────────────────────────────────────────────────────────────
