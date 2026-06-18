@@ -1,0 +1,486 @@
+name: Build MPDP – All Platforms
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version string (z. B. 1.0.0)'
+        required: false
+        default: 'dev'
+
+permissions:
+  contents: write   # Für GitHub Release Upload
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Gemeinsame Schritte als YAML-Anker
+# ─────────────────────────────────────────────────────────────────────────────
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # WINDOWS x64
+  # ───────────────────────────────────────────────────────────────────────────
+  build-windows-x64:
+    name: Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 (x64) einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+
+      - name: Abhängigkeiten installieren
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python.exe -m pip install --upgrade pip
+          .venv\Scripts\python.exe -m pip install PySide6 Nuitka
+
+      - name: Qt-Ressourcen kompilieren (resources.rcc)
+        shell: pwsh
+        run: |
+          $rcc = (python -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
+          if (Test-Path $rcc) {
+            & $rcc -binary resources.qrc -o resources.rcc
+          } elseif (Test-Path "resources.rcc") {
+            Write-Host "resources.rcc bereits vorhanden, wird verwendet."
+          } else {
+            Write-Error "resources.rcc nicht gefunden und rcc.exe nicht verfügbar!"
+            exit 1
+          }
+
+      - name: pyside6-deploy (Windows x64)
+        shell: pwsh
+        run: |
+          .venv\Scripts\python.exe -m pyside6deploy -c pysidedeploy.spec --verbose
+
+      - name: Artifact umbenennen
+        shell: pwsh
+        run: |
+          $src = Get-ChildItem dist -Filter "*.exe" | Select-Object -First 1
+          if ($src) {
+            Rename-Item $src.FullName "MPDP-windows-x64.exe"
+          }
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-windows-x64
+          path: dist/MPDP-windows-x64.exe
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # WINDOWS ARM64
+  # Hinweis: Erfordert GitHub's "windows-11-arm" Runner (kostenpflichtig)
+  # oder einen selbst-gehosteten ARM64-Runner.
+  # Für Selbst-Hosting: https://docs.github.com/en/actions/hosting-your-own-runners
+  # ───────────────────────────────────────────────────────────────────────────
+  build-windows-arm64:
+    name: Windows ARM64
+    runs-on: windows-11-arm
+    continue-on-error: true   # Nicht verfügbaren Runner nicht als Fehler werten
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 (ARM64) einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: arm64
+
+      - name: Abhängigkeiten installieren
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python.exe -m pip install --upgrade pip
+          .venv\Scripts\python.exe -m pip install PySide6 Nuitka
+
+      - name: Qt-Ressourcen kompilieren (resources.rcc)
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "resources.rcc")) {
+            Write-Error "resources.rcc nicht gefunden!"
+            exit 1
+          }
+
+      - name: pyside6-deploy (Windows ARM64)
+        shell: pwsh
+        run: |
+          .venv\Scripts\python.exe -m pyside6deploy -c build/pysidedeploy-windows-arm64.spec --verbose
+
+      - name: Artifact umbenennen
+        shell: pwsh
+        run: |
+          $src = Get-ChildItem dist -Filter "*.exe" | Select-Object -First 1
+          if ($src) {
+            Rename-Item $src.FullName "MPDP-windows-arm64.exe"
+          }
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-windows-arm64
+          path: dist/MPDP-windows-arm64.exe
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # macOS x86_64 (Intel)
+  # macos-13 = letzter Intel-basierter macOS-Runner bei GitHub Actions
+  # ───────────────────────────────────────────────────────────────────────────
+  build-macos-intel:
+    name: macOS Intel (x86_64)
+    runs-on: macos-13
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install PySide6 Nuitka
+
+      - name: Qt-Ressourcen kompilieren (resources.rcc)
+        run: |
+          if [ ! -f resources.rcc ]; then
+            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+            if [ -f "$RCC" ]; then
+              "$RCC" -binary resources.qrc -o resources.rcc
+            else
+              echo "resources.rcc nicht gefunden!" && exit 1
+            fi
+          fi
+
+      - name: pyside6-deploy (macOS Intel, x86_64)
+        run: |
+          # Kein --macos-target-arch=universal hier, da wir nur x86_64 bauen
+          .venv/bin/python3 -m pyside6deploy \
+            -c build/pysidedeploy-macos.spec \
+            --verbose
+
+      - name: Artifact umbenennen und verpacken
+        run: |
+          APP=$(find dist -name "*.app" | head -1)
+          if [ -n "$APP" ]; then
+            cd dist
+            zip -r MPDP-macos-x86_64.zip "$(basename "$APP")"
+          else
+            # Fallback: raw binary
+            BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
+            mv "$BIN" dist/MPDP-macos-x86_64
+          fi
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-macos-intel
+          path: dist/MPDP-macos-x86_64*
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # macOS ARM64 (Apple Silicon, M1/M2/M3)
+  # macos-latest = ARM64 seit GitHub Actions Update 2024
+  # ───────────────────────────────────────────────────────────────────────────
+  build-macos-arm64:
+    name: macOS Apple Silicon (arm64)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install PySide6 Nuitka
+
+      - name: Qt-Ressourcen kompilieren (resources.rcc)
+        run: |
+          if [ ! -f resources.rcc ]; then
+            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+            if [ -f "$RCC" ]; then
+              "$RCC" -binary resources.qrc -o resources.rcc
+            else
+              echo "resources.rcc nicht gefunden!" && exit 1
+            fi
+          fi
+
+      - name: pyside6-deploy (macOS ARM64)
+        run: |
+          .venv/bin/python3 -m pyside6deploy \
+            -c build/pysidedeploy-macos.spec \
+            --verbose
+
+      - name: Artifact umbenennen und verpacken
+        run: |
+          APP=$(find dist -name "*.app" | head -1)
+          if [ -n "$APP" ]; then
+            cd dist
+            zip -r MPDP-macos-arm64.zip "$(basename "$APP")"
+          else
+            BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
+            mv "$BIN" dist/MPDP-macos-arm64
+          fi
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-macos-arm64
+          path: dist/MPDP-macos-arm64*
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # macOS Universal Binary (x86_64 + arm64 in einer Datei)
+  # Wird aus den beiden macOS-Builds per lipo zusammengesetzt
+  # ───────────────────────────────────────────────────────────────────────────
+  build-macos-universal:
+    name: macOS Universal Binary
+    runs-on: macos-latest
+    needs: [build-macos-intel, build-macos-arm64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Intel-Artifact herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          name: MPDP-macos-intel
+          path: artifacts/intel
+
+      - name: ARM64-Artifact herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          name: MPDP-macos-arm64
+          path: artifacts/arm64
+
+      - name: Universal Binary mit lipo erstellen
+        run: |
+          mkdir -p dist
+
+          INTEL=$(find artifacts/intel -maxdepth 1 -type f ! -name "*.zip" | head -1)
+          ARM=$(find artifacts/arm64 -maxdepth 1 -type f ! -name "*.zip" | head -1)
+
+          if [ -n "$INTEL" ] && [ -n "$ARM" ]; then
+            lipo -create "$INTEL" "$ARM" -output dist/MPDP-macos-universal
+            chmod +x dist/MPDP-macos-universal
+            echo "Universal Binary erstellt."
+          else
+            echo "Mindestens ein Einzel-Binary fehlt, überspringe lipo."
+            exit 1
+          fi
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-macos-universal
+          path: dist/MPDP-macos-universal
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # LINUX x86_64
+  # ───────────────────────────────────────────────────────────────────────────
+  build-linux-x64:
+    name: Linux x86_64
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: System-Abhängigkeiten installieren
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            libglib2.0-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libxcb-xinerama0 \
+            libxcb-cursor0 \
+            libxkbcommon-x11-0 \
+            libxcb-keysyms1 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libdbus-1-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            speech-dispatcher \
+            libspeechd-dev \
+            patchelf \
+            ccache
+
+      - name: Python 3.12 einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Abhängigkeiten installieren
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install PySide6 Nuitka
+
+      - name: Qt-Ressourcen kompilieren (resources.rcc)
+        run: |
+          if [ ! -f resources.rcc ]; then
+            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+            if [ -f "$RCC" ]; then
+              "$RCC" -binary resources.qrc -o resources.rcc
+            else
+              echo "resources.rcc nicht gefunden!" && exit 1
+            fi
+          fi
+
+      - name: pyside6-deploy (Linux x86_64)
+        run: |
+          .venv/bin/python3 -m pyside6deploy \
+            -c build/pysidedeploy-linux.spec \
+            --verbose
+
+      - name: Artifact umbenennen
+        run: |
+          BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
+          [ -n "$BIN" ] && mv "$BIN" dist/MPDP-linux-x86_64
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-linux-x86_64
+          path: dist/MPDP-linux-x86_64
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # LINUX aarch64 (ARM64)
+  # Verwendet QEMU-Emulation via ubuntu-22.04 + qemu-user-static
+  # Für native Geschwindigkeit: selbst-gehosteten aarch64-Runner verwenden
+  # ───────────────────────────────────────────────────────────────────────────
+  build-linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: QEMU für aarch64 einrichten
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build in aarch64-Docker-Container
+        uses: docker/setup-buildx-action@v3
+
+      - name: pyside6-deploy im aarch64-Container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: arm64v8/ubuntu:22.04
+          options: >-
+            --platform linux/arm64
+            -v ${{ github.workspace }}:/workspace
+            -w /workspace
+          run: |
+            apt-get update -qq
+            apt-get install -y \
+              python3 python3-pip python3-venv \
+              libglib2.0-dev libgl1-mesa-dev libegl1-mesa-dev \
+              libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0 \
+              libdbus-1-dev libasound2-dev libpulse-dev \
+              libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+              speech-dispatcher libspeechd-dev \
+              patchelf ccache
+
+            python3 -m venv .venv
+            .venv/bin/pip install --upgrade pip
+            .venv/bin/pip install PySide6 Nuitka
+
+            if [ ! -f resources.rcc ]; then
+              echo "Warnung: resources.rcc nicht gefunden, Schritt wird übersprungen"
+            fi
+
+            .venv/bin/python3 -m pyside6deploy \
+              -c build/pysidedeploy-linux.spec \
+              --verbose
+
+            BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
+            [ -n "$BIN" ] && mv "$BIN" dist/MPDP-linux-aarch64
+
+      - name: Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: MPDP-linux-aarch64
+          path: dist/MPDP-linux-aarch64
+          retention-days: 30
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # GitHub Release erstellen (nur bei Tag-Push)
+  # Bündelt alle Artifacts in einem Release
+  # ───────────────────────────────────────────────────────────────────────────
+  release:
+    name: GitHub Release erstellen
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build-windows-x64
+      - build-macos-intel
+      - build-macos-arm64
+      - build-macos-universal
+      - build-linux-x64
+
+    steps:
+      - name: Alle Artifacts herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: GitHub Release erstellen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: MPDP ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: release-artifacts/**
+          body: |
+            ## MPDP ${{ github.ref_name }}
+
+            ### Downloads
+
+            | Plattform | Architektur | Datei |
+            |-----------|-------------|-------|
+            | Windows   | x64         | `MPDP-windows-x64.exe` |
+            | Windows   | ARM64       | `MPDP-windows-arm64.exe` |
+            | macOS     | Intel (x86_64) | `MPDP-macos-x86_64` |
+            | macOS     | Apple Silicon (arm64) | `MPDP-macos-arm64` |
+            | macOS     | Universal (x86_64+arm64) | `MPDP-macos-universal` |
+            | Linux     | x86_64      | `MPDP-linux-x86_64` |
+            | Linux     | aarch64     | `MPDP-linux-aarch64` |

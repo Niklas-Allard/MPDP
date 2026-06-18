@@ -1,95 +1,94 @@
 [app]
 
-# title of your application
-title = pyside_app_demo
+# Anwendungstitel
+title = MPDP
 
-# project root directory. default = The parent directory of input_file
+# Projektstammverzeichnis
 project_dir = .
 
-# source file entry point path. default = main.py
+# Einstiegspunkt
 input_file = main.py
 
-# directory where the executable output is generated
+# Ausgabeverzeichnis der fertigen Binary
 exec_directory = ./dist
 
-# path to the project file relative to project_dir
+# Projektdatei
 project_file = pyproject.toml
-icon = C:\dev\MPDP\.venv313\Lib\site-packages\PySide6\scripts\deploy_lib\pyside_icon.ico
+
+# Icon (leer lassen oder Pfad zu einer .ico/.icns/.png Datei angeben)
+icon =
 
 [python]
 
-# python path
-python_path = C:\dev\MPDP\.venv313\Scripts\python.exe
+# Pfad zur Python-Executable (relativ oder absolut)
+python_path = .venv313\Scripts\python.exe
 
-# python packages to install
+# Nuitka-Version (muss mit installierter Version übereinstimmen)
 packages = Nuitka==2.7.11
 
-# buildozer = for deploying Android application
+# Android (nicht verwendet)
 android_packages = buildozer==1.5.0,cython==0.29.33
 
 [qt]
 
-# paths to required qml files. comma separated
-# normally all the qml files required by the project are added automatically
-# design studio projects include the qml files using qt resources
-qml_files = MultiMediaPlayer\main.qml,FileBrowser\main.qml,StartPage\main.qml,main.qml
+# Alle QML-Dateien des Projekts (werden in die Binary eingebettet)
+qml_files = main.qml,StartPage/main.qml,FileBrowser/main.qml,MultiMediaPlayer/main.qml,Settings/main.qml
 
-# excluded qml plugin binaries
-excluded_qml_plugins = QtCharts,QtSensors,QtWebEngine
+# QML-Plugins die NICHT benötigt werden (reduziert Binary-Größe)
+excluded_qml_plugins = QtCharts,QtSensors,QtWebEngine,QtWebView,Qt3D,QtLocation,QtQuick3D,QtDataVisualization
 
-# qt modules used. comma separated
-modules = Core,Gui,Qml,Quick,QuickControls2
+# Qt-Module: alle tatsächlich genutzten Module explizit angeben
+# Core, Gui, Qml, Quick, QuickControls2 - Basis-UI
+# Multimedia - MediaPlayer, VideoOutput, AudioOutput
+# TextToSpeech - Barrierefreiheit / Sprachausgabe
+# Concurrent, Network - interne Qt-Abhängigkeiten
+modules = Core,Gui,Qml,Quick,QuickControls2,Multimedia,TextToSpeech,Concurrent,Network
 
-# qt plugins used by the application. only relevant for desktop deployment
-# for qt plugins used in android application see [android][plugins]
-plugins = accessiblebridge,generic,iconengines,imageformats,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph
+# Qt-Plugins: alle für Laufzeit benötigten Plugin-Verzeichnisse
+# accessiblebridge  - Screenreader / Barrierefreiheit
+# generic           - Generische Eingabe-Plugins
+# iconengines       - SVG-Icons (qsvgicon)
+# imageformats      - PNG, JPG, SVG Bildformate
+# multimedia        - Medien-Backend (FFmpeg / WMF / AVFoundation)
+# platforminputcontexts - Eingabemethoden / IME
+# platforms         - Fenster-System (windows / xcb / cocoa / wayland)
+# platformthemes    - Native Plattform-Themes (GTK, KDE)
+# qmllint           - QML-Validierung
+# qmltooling        - QML-Debugging
+# scenegraph        - Qt Quick Scene-Graph (OpenGL / Vulkan)
+# tls               - TLS/SSL für interne Qt-Verbindungen
+plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls
 
 [android]
 
-# path to pyside wheel
-wheel_pyside = 
-
-# path to shiboken wheel
-wheel_shiboken = 
-
-# plugins to be copied to libs folder of the packaged application. comma separated
-plugins = 
+# Android wird in diesem Projekt nicht unterstützt
+wheel_pyside =
+wheel_shiboken =
+plugins =
 
 [nuitka]
 
-# usage description for permissions requested by the app as found in the info.plist file
-# of the app bundle. comma separated
-# eg = extra_args = --show-modules --follow-stdlib
-macos.permissions = 
+# macOS App-Berechtigungen (leer = keine besonderen Rechte benötigt)
+macos.permissions =
 
-# mode of using nuitka. accepts standalone or onefile. default = onefile
+# Modus: onefile = einzelne ausführbare Datei
+# standalone = Verzeichnis mit allen Abhängigkeiten
 mode = onefile
 
-# specify any extra nuitka arguments
-extra_args = --quiet --noinclude-qt-translations --force-dll-dependency-cache-update --zig
+# Nuitka-Argumente (Windows x64)
+# --quiet                            Weniger Build-Output
+# --noinclude-qt-translations        Qt-Übersetzungsdateien weglassen (reduziert Größe)
+# --include-data-files               Externe Dateien einbetten
+# --include-data-dir                 Externe Verzeichnisse einbetten
+# --force-dll-dependency-cache-update  Windows: DLL-Cache aktualisieren
+extra_args = --quiet --noinclude-qt-translations --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database/ --include-data-dir=icons=icons/ --include-data-dir=StartPage=StartPage/ --include-data-dir=FileBrowser=FileBrowser/ --include-data-dir=MultiMediaPlayer=MultiMediaPlayer/ --include-data-dir=Settings=Settings/ --force-dll-dependency-cache-update
 
 [buildozer]
 
-# build mode
-# possible values = ["aarch64", "armv7a", "i686", "x86_64"]
-# release creates a .aab, while debug creates a .apk
 mode = debug
-
-# path to pyside6 and shiboken6 recipe dir
-recipe_dir = 
-
-# path to extra qt android .jar files to be loaded by the application
-jars_dir = 
-
-# if empty, uses default ndk path downloaded by buildozer
-ndk_path = 
-
-# if empty, uses default sdk path downloaded by buildozer
-sdk_path = 
-
-# other libraries to be loaded at app startup. comma separated.
-local_libs = 
-
-# architecture of deployed platform
-arch = 
-
+recipe_dir =
+jars_dir =
+ndk_path =
+sdk_path =
+local_libs =
+arch =
