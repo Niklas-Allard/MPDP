@@ -171,6 +171,7 @@ Item {
                     id: mouseAreaCard
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: settingsManager.speakTrigger === "hover" || settingsManager.openTrigger === "hover"
                     property string pendingSpeak: ""
 
                     function openItem() {
@@ -210,19 +211,58 @@ Item {
                         onTriggered: root.speakIfEnabled(mouseAreaCard.pendingSpeak)
                     }
 
-                    onClicked: {
-                        if (settingsManager.openOnSingleClick) {
-                            speakTimer.stop()
-                            openItem()
+                    // Hover-Timers laufen nur, solange die Maus über der Karte ist
+                    Timer {
+                        id: hoverSpeakTimer
+                        interval: settingsManager.hoverDelay
+                        repeat: false
+                        onTriggered: root.speakIfEnabled(mouseAreaCard.pendingSpeak)
+                    }
+
+                    Timer {
+                        id: hoverOpenTimer
+                        interval: settingsManager.hoverDelay
+                        repeat: false
+                        onTriggered: openItem()
+                    }
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            if (settingsManager.speakTrigger === "hover") {
+                                mouseAreaCard.pendingSpeak = modelData.name
+                                hoverSpeakTimer.restart()
+                            }
+                            if (settingsManager.openTrigger === "hover") {
+                                hoverOpenTimer.restart()
+                            }
                         } else {
-                            mouseAreaCard.pendingSpeak = modelData.name
-                            speakTimer.restart()
+                            hoverSpeakTimer.stop()
+                            hoverOpenTimer.stop()
                         }
                     }
 
-                    onDoubleClicked: (mouse) => {
+                    onClicked: {
+                        if (settingsManager.speakTrigger === "singleClick") {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
+                        if (settingsManager.openTrigger === "singleClick") {
+                            speakTimer.stop()
+                            openItem()
+                        }
+                    }
+
+                    onDoubleClicked: {
                         speakTimer.stop()
-                        openItem()
+                        hoverSpeakTimer.stop()
+                        hoverOpenTimer.stop()
+                        if (settingsManager.speakTrigger === "doubleClick") {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
+                        if (settingsManager.openTrigger === "doubleClick") {
+                            openItem()
+                        }
                     }
                 }
 

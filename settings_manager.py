@@ -30,7 +30,9 @@ class SettingsManager(QObject):
     ttsDashPauseDurationChanged = Signal()
     clickSpeakDelayChanged = Signal()
 
-    openOnSingleClickChanged = Signal()
+    speakTriggerChanged = Signal()
+    openTriggerChanged = Signal()
+    hoverDelayChanged = Signal()
     showHiddenFilesChanged = Signal()
     sortOrderChanged = Signal()
     hideDisabledNavButtonsChanged = Signal()
@@ -62,7 +64,9 @@ class SettingsManager(QObject):
         "ttsDashPauseDuration": 400,  # ms Pause nach " - "
         "clickSpeakDelay": 400,  # ms
         # Navigation
-        "openOnSingleClick": False,
+        "speakTrigger": "singleClick",   # "hover" | "singleClick" | "doubleClick"
+        "openTrigger": "doubleClick",    # "hover" | "singleClick" | "doubleClick"
+        "hoverDelay": 3000,              # ms Verzögerung bei Hover-Auslöser
         "showHiddenFiles": False,
         "sortOrder": "name_asc",  # name_asc | name_desc | date_desc | size_desc
         "hideDisabledNavButtons": False,  # deaktivierte Blättern-Buttons unsichtbar (Platz bleibt)
@@ -363,13 +367,29 @@ class SettingsManager(QObject):
         self._set("clickSpeakDelay", int(value), self.clickSpeakDelayChanged)
 
     # ---- Navigation ----------------------------------------------------------
-    @Property(bool, notify=openOnSingleClickChanged)
-    def openOnSingleClick(self):
-        return self._get("openOnSingleClick", bool)
+    @Property(str, notify=speakTriggerChanged)
+    def speakTrigger(self):
+        return self._get("speakTrigger", str)
 
-    @openOnSingleClick.setter
-    def openOnSingleClick(self, value):
-        self._set("openOnSingleClick", bool(value), self.openOnSingleClickChanged)
+    @speakTrigger.setter
+    def speakTrigger(self, value):
+        self._set("speakTrigger", str(value), self.speakTriggerChanged)
+
+    @Property(str, notify=openTriggerChanged)
+    def openTrigger(self):
+        return self._get("openTrigger", str)
+
+    @openTrigger.setter
+    def openTrigger(self, value):
+        self._set("openTrigger", str(value), self.openTriggerChanged)
+
+    @Property(int, notify=hoverDelayChanged)
+    def hoverDelay(self):
+        return self._get("hoverDelay", int)
+
+    @hoverDelay.setter
+    def hoverDelay(self, value):
+        self._set("hoverDelay", int(value), self.hoverDelayChanged)
 
     @Property(bool, notify=showHiddenFilesChanged)
     def showHiddenFiles(self):
@@ -556,7 +576,8 @@ class SettingsManager(QObject):
             self.ttsRateChanged, self.ttsVolumeChanged,
             self.ttsDashPauseEnabledChanged, self.ttsDashPauseDurationChanged,
             self.clickSpeakDelayChanged,
-            self.openOnSingleClickChanged, self.showHiddenFilesChanged,
+            self.speakTriggerChanged, self.openTriggerChanged, self.hoverDelayChanged,
+            self.showHiddenFilesChanged,
             self.sortOrderChanged, self.hideDisabledNavButtonsChanged,
             self.defaultVolumeChanged, self.resumePlaybackChanged,
             self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
