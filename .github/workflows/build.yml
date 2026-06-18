@@ -43,14 +43,14 @@ jobs:
       - name: Abhängigkeiten installieren
         shell: pwsh
         run: |
-          python -m venv .venv
-          .venv\Scripts\python.exe -m pip install --upgrade pip
-          .venv\Scripts\python.exe -m pip install PySide6 Nuitka
+          python -m venv .venv313
+          .venv313\Scripts\python.exe -m pip install --upgrade pip
+          .venv313\Scripts\python.exe -m pip install PySide6 "Nuitka==4.1"
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         shell: pwsh
         run: |
-          $rcc = (python -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
+          $rcc = (.venv313\Scripts\python.exe -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
           if (Test-Path $rcc) {
             & $rcc -binary resources.qrc -o resources.rcc
           } elseif (Test-Path "resources.rcc") {
@@ -63,21 +63,26 @@ jobs:
       - name: pyside6-deploy (Windows x64)
         shell: pwsh
         run: |
-          .venv\Scripts\python.exe -m pyside6deploy -c pysidedeploy.spec --verbose
+          $env:PATH = "$PWD\.venv313\Scripts;$env:PATH"
+          $env:VIRTUAL_ENV = "$PWD\.venv313"
+          pyside6-deploy -c pysidedeploy.spec main.py
 
-      - name: Artifact umbenennen
+      - name: Artifact verpacken (standalone → ZIP)
         shell: pwsh
         run: |
-          $src = Get-ChildItem dist -Filter "*.exe" | Select-Object -First 1
-          if ($src) {
-            Rename-Item $src.FullName "MPDP-windows-x64.exe"
+          $distDir = Get-ChildItem dist -Directory | Select-Object -First 1
+          if ($distDir) {
+            Compress-Archive -Path $distDir.FullName -DestinationPath dist/MPDP-windows-x64.zip
+          } else {
+            Write-Error "Kein dist-Verzeichnis gefunden!"
+            exit 1
           }
 
       - name: Artifact hochladen
         uses: actions/upload-artifact@v4
         with:
           name: MPDP-windows-x64
-          path: dist/MPDP-windows-x64.exe
+          path: dist/MPDP-windows-x64.zip
           retention-days: 30
 
   # ───────────────────────────────────────────────────────────────────────────
@@ -104,22 +109,25 @@ jobs:
       - name: Abhängigkeiten installieren
         shell: pwsh
         run: |
-          python -m venv .venv
-          .venv\Scripts\python.exe -m pip install --upgrade pip
-          .venv\Scripts\python.exe -m pip install PySide6 Nuitka
+          python -m venv .venv313
+          .venv313\Scripts\python.exe -m pip install --upgrade pip
+          .venv313\Scripts\python.exe -m pip install PySide6 "Nuitka==4.1"
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         shell: pwsh
         run: |
           if (-not (Test-Path "resources.rcc")) {
-            Write-Error "resources.rcc nicht gefunden!"
-            exit 1
+            $rcc = (.venv313\Scripts\python.exe -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
+            if (Test-Path $rcc) { & $rcc -binary resources.qrc -o resources.rcc }
+            else { Write-Error "resources.rcc nicht gefunden!"; exit 1 }
           }
 
       - name: pyside6-deploy (Windows ARM64)
         shell: pwsh
         run: |
-          .venv\Scripts\python.exe -m pyside6deploy -c build/pysidedeploy-windows-arm64.spec --verbose
+          $env:PATH = "$PWD\.venv313\Scripts;$env:PATH"
+          $env:VIRTUAL_ENV = "$PWD\.venv313"
+          pyside6-deploy -c build/pysidedeploy-windows-arm64.spec main.py
 
       - name: Artifact umbenennen
         shell: pwsh

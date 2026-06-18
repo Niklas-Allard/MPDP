@@ -40,7 +40,7 @@ plugins =
 # Nur eintragen wenn die App z. B. Mikrofon/Kamera benötigt
 macos.permissions =
 
-mode = onefile
+mode = standalone
 
 # Nuitka-Argumente (macOS - Universal Binary: x86_64 + arm64)
 # --macos-target-arch=universal     Universal Binary für Intel + Apple Silicon
@@ -48,7 +48,7 @@ mode = onefile
 # --macos-app-name                  Bundle-Name
 # --macos-app-version               Bundle-Version
 # --macos-signed-app-name           Code-Signing Identität (leer = kein Signing)
-extra_args = --quiet --noinclude-qt-translations --macos-target-arch=universal --macos-create-app-bundle --macos-app-name=MPDP --macos-app-version=1.0 --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database/ --include-data-dir=icons=icons/ --include-data-dir=StartPage=StartPage/ --include-data-dir=FileBrowser=FileBrowser/ --include-data-dir=MultiMediaPlayer=MultiMediaPlayer/ --include-data-dir=Settings=Settings/
+extra_args = --quiet --noinclude-qt-translations --macos-create-app-bundle --macos-app-name=MPDP --macos-app-version=1.0 --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database --include-data-dir=icons=icons --include-data-dir=StartPage=StartPage --include-data-dir=FileBrowser=FileBrowser --include-data-dir=MultiMediaPlayer=MultiMediaPlayer --include-data-dir=Settings=Settings
 
 [buildozer]
 

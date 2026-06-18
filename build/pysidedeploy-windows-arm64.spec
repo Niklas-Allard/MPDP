@@ -34,12 +34,12 @@ plugins =
 [nuitka]
 
 macos.permissions =
-mode = onefile
+mode = standalone
 
 # Windows ARM64: Nuitka erkennt die Zielarchitektur aus der Python-Installation.
-# Wird mit ARM64-Python ausgeführt → erzeugt ARM64-Binary.
+# Wird mit ARM64-Python ausgefuehrt -> erzeugt ARM64-Binary.
 # --force-dll-dependency-cache-update  Windows-spezifisch
-extra_args = --quiet --noinclude-qt-translations --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database/ --include-data-dir=icons=icons/ --include-data-dir=StartPage=StartPage/ --include-data-dir=FileBrowser=FileBrowser/ --include-data-dir=MultiMediaPlayer=MultiMediaPlayer/ --include-data-dir=Settings=Settings/ --force-dll-dependency-cache-update
+extra_args = --quiet --noinclude-qt-translations --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database --include-data-dir=icons=icons --include-data-dir=StartPage=StartPage --include-data-dir=FileBrowser=FileBrowser --include-data-dir=MultiMediaPlayer=MultiMediaPlayer --include-data-dir=Settings=Settings --force-dll-dependency-cache-update
 
 [buildozer]
 

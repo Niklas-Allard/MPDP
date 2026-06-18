@@ -37,14 +37,12 @@ plugins =
 [nuitka]
 
 macos.permissions =
-mode = onefile
+mode = standalone
 
 # Nuitka-Argumente (Linux x86_64 / aarch64)
-# --linux-icon              App-Icon (PNG)
-# --enable-plugin=no-qt     Nicht verwenden (Qt wird durch pyside6-deploy verwaltet)
 # Die Zielarchitektur wird durch die Python/PySide6-Installation bestimmt.
-# Für aarch64: Python und PySide6 müssen als aarch64-Builds vorliegen.
-extra_args = --quiet --noinclude-qt-translations --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database/ --include-data-dir=icons=icons/ --include-data-dir=StartPage=StartPage/ --include-data-dir=FileBrowser=FileBrowser/ --include-data-dir=MultiMediaPlayer=MultiMediaPlayer/ --include-data-dir=Settings=Settings/
+# Fuer aarch64: Python und PySide6 muessen als aarch64-Builds vorliegen.
+extra_args = --quiet --noinclude-qt-translations --include-data-files=resources.rcc=resources.rcc --include-data-dir=database=database --include-data-dir=icons=icons --include-data-dir=StartPage=StartPage --include-data-dir=FileBrowser=FileBrowser --include-data-dir=MultiMediaPlayer=MultiMediaPlayer --include-data-dir=Settings=Settings
 
 [buildozer]
 
