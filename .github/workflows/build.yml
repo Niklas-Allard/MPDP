@@ -50,7 +50,7 @@ jobs:
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         shell: pwsh
         run: |
-          $rcc = (python -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
+          $rcc = (.venv\Scripts\python.exe -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
           if (Test-Path $rcc) {
             & $rcc -binary resources.qrc -o resources.rcc
           } elseif (Test-Path "resources.rcc") {
