@@ -17,6 +17,25 @@ Item {
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
         Component.onCompleted: startPage.applyTtsVoice()
+        onStateChanged: {
+            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
+                    && startPage._ttsQueue.length > 0) {
+                dashPauseTimer.start()
+            }
+        }
+    }
+
+    property var _ttsQueue: []
+
+    Timer {
+        id: dashPauseTimer
+        interval: settingsManager.ttsDashPauseDuration
+        repeat: false
+        onTriggered: {
+            if (startPage._ttsQueue.length > 0) {
+                tts.say(startPage._ttsQueue.shift())
+            }
+        }
     }
 
     // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
@@ -38,7 +57,16 @@ Item {
     }
 
     function speakIfEnabled(text) {
-        if (settingsManager.ttsEnabled) tts.say(text)
+        if (!settingsManager.ttsEnabled) return
+        tts.stop()
+        startPage._ttsQueue = []
+        if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
+            var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
+            startPage._ttsQueue = parts
+            if (startPage._ttsQueue.length > 0) tts.say(startPage._ttsQueue.shift())
+        } else {
+            tts.say(text)
+        }
     }
 
     // Header mit aktuellem Pfad/Namen

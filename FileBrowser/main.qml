@@ -12,6 +12,19 @@ Item {
     property int minCardWidth: settingsManager.cardMinWidth
     property int minCardHeight: settingsManager.cardMinHeight
     property int currentPage: 0
+    property string lastPlayedFile: ""
+
+    Component.onCompleted: root.updateLastPlayed()
+
+    onFolderDataChanged: root.updateLastPlayed()
+
+    function updateLastPlayed() {
+        if (root.folderData && root.folderData.path && typeof media_DB !== "undefined") {
+            root.lastPlayedFile = media_DB.get_last_played_in_folder(root.folderData.path)
+        } else {
+            root.lastPlayedFile = ""
+        }
+    }
 
     Component.onDestruction: {
         tts.stop()
@@ -27,6 +40,12 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.speakIfEnabled(headerText.text)
+        }
     }
 
     TextToSpeech {
@@ -34,6 +53,25 @@ Item {
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
         Component.onCompleted: root.applyTtsVoice()
+        onStateChanged: {
+            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
+                    && root._ttsQueue.length > 0) {
+                dashPauseTimer.start()
+            }
+        }
+    }
+
+    property var _ttsQueue: []
+
+    Timer {
+        id: dashPauseTimer
+        interval: settingsManager.ttsDashPauseDuration
+        repeat: false
+        onTriggered: {
+            if (root._ttsQueue.length > 0) {
+                tts.say(root._ttsQueue.shift())
+            }
+        }
     }
 
     // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
@@ -64,8 +102,23 @@ Item {
         function onSortOrderChanged() { root.reloadFolder() }
     }
 
+    Connections {
+        target: media_DB
+        function onHistoryChanged() { root.updateLastPlayed() }
+    }
+
     function speakIfEnabled(text) {
-        if (settingsManager.ttsEnabled) tts.say(text)
+        if (!settingsManager.ttsEnabled) return
+        text = regexFilter.apply(text)
+        tts.stop()
+        root._ttsQueue = []
+        if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
+            var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
+            root._ttsQueue = parts
+            if (root._ttsQueue.length > 0) tts.say(root._ttsQueue.shift())
+        } else {
+            tts.say(text)
+        }
     }
 
     Grid {
@@ -118,6 +171,7 @@ Item {
                     id: mouseAreaCard
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: settingsManager.speakTrigger === "hover" || settingsManager.openTrigger === "hover"
                     property string pendingSpeak: ""
 
                     function openItem() {
@@ -157,19 +211,58 @@ Item {
                         onTriggered: root.speakIfEnabled(mouseAreaCard.pendingSpeak)
                     }
 
-                    onClicked: {
-                        if (settingsManager.openOnSingleClick) {
-                            speakTimer.stop()
-                            openItem()
+                    // Hover-Timers laufen nur, solange die Maus über der Karte ist
+                    Timer {
+                        id: hoverSpeakTimer
+                        interval: settingsManager.hoverDelay
+                        repeat: false
+                        onTriggered: root.speakIfEnabled(mouseAreaCard.pendingSpeak)
+                    }
+
+                    Timer {
+                        id: hoverOpenTimer
+                        interval: settingsManager.hoverDelay
+                        repeat: false
+                        onTriggered: openItem()
+                    }
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            if (settingsManager.speakTrigger === "hover") {
+                                mouseAreaCard.pendingSpeak = modelData.name
+                                hoverSpeakTimer.restart()
+                            }
+                            if (settingsManager.openTrigger === "hover") {
+                                hoverOpenTimer.restart()
+                            }
                         } else {
-                            mouseAreaCard.pendingSpeak = modelData.name
-                            speakTimer.restart()
+                            hoverSpeakTimer.stop()
+                            hoverOpenTimer.stop()
                         }
                     }
 
-                    onDoubleClicked: (mouse) => {
+                    onClicked: {
+                        if (settingsManager.speakTrigger === "singleClick") {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
+                        if (settingsManager.openTrigger === "singleClick") {
+                            speakTimer.stop()
+                            openItem()
+                        }
+                    }
+
+                    onDoubleClicked: {
                         speakTimer.stop()
-                        openItem()
+                        hoverSpeakTimer.stop()
+                        hoverOpenTimer.stop()
+                        if (settingsManager.speakTrigger === "doubleClick") {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
+                        if (settingsManager.openTrigger === "doubleClick") {
+                            openItem()
+                        }
                     }
                 }
 
@@ -242,6 +335,43 @@ Item {
             icon.width: 24
             icon.height: 24
             onClicked: root.StackView.view.pop(null)
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
+        }
+
+        Button {
+            visible: root.lastPlayedFile !== ""
+            icon.source: "../icons/play.svg"
+            icon.width: 24
+            icon.height: 24
+            ToolTip.text: {
+                var parts = root.lastPlayedFile.replace(/\\/g, "/").split("/")
+                var name = parts[parts.length - 1]
+                var dot = name.lastIndexOf(".")
+                return dot > 0 ? name.substring(0, dot) : name
+            }
+            ToolTip.visible: hovered
+            ToolTip.delay: 400
+            onClicked: {
+                var filePath = root.lastPlayedFile.replace(/\\/g, "/")
+                var urlPath = "file:///" + filePath
+                var siblings = root.folderData && root.folderData.children ? root.folderData.children : []
+                var playlist = []
+                var startIndex = 0
+                for (var i = 0; i < siblings.length; i++) {
+                    if (siblings[i].type === "file" && siblings[i].path) {
+                        if (siblings[i].path.replace(/\\/g, "/") === filePath)
+                            startIndex = playlist.length
+                        playlist.push("file:///" + siblings[i].path.replace(/\\/g, "/"))
+                    }
+                }
+                root.StackView.view.push("../MultiMediaPlayer/main.qml", {
+                    "mediaSource": urlPath,
+                    "playlist": playlist,
+                    "playlistIndex": startIndex
+                })
+            }
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }

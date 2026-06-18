@@ -31,6 +31,73 @@ ApplicationWindow {
 
     Image { source: "qrc:/icons/arrow_forward.png"; width: 32; height: 32 }
 
+    // ---- Bildschirmschoner --------------------------------------------------
+
+    Timer {
+        id: idleTimer
+        interval: settingsManager.screensaverTimeout
+        repeat: false
+        onTriggered: {
+            if (!settingsManager.screensaverEnabled) return
+            // Nicht aktivieren wenn Medien gerade abspielen
+            var current = stack.currentItem
+            if (current && current.isPlaying) {
+                idleTimer.restart()
+                return
+            }
+            screensaverLoader.active = true
+        }
+    }
+
+    // Aktivität (Maus/Taste) → Bildschirmschoner beenden + Timer zurücksetzen
+    Connections {
+        target: activityMonitor
+        function onActivity_detected() {
+            if (screensaverLoader.active) {
+                screensaverLoader.active = false
+            }
+            if (settingsManager.screensaverEnabled) {
+                idleTimer.restart()
+            } else {
+                idleTimer.stop()
+            }
+        }
+    }
+
+    // Wenn Bildschirmschoner aktiviert/deaktiviert wird oder Timeout sich ändert
+    Connections {
+        target: settingsManager
+        function onScreensaverEnabledChanged() {
+            if (settingsManager.screensaverEnabled) {
+                idleTimer.restart()
+            } else {
+                idleTimer.stop()
+                screensaverLoader.active = false
+            }
+        }
+        function onScreensaverTimeoutChanged() {
+            idleTimer.interval = settingsManager.screensaverTimeout
+            if (settingsManager.screensaverEnabled) {
+                idleTimer.restart()
+            }
+        }
+    }
+
+    // Bildschirmschoner-Overlay (höchste Z-Ebene)
+    Loader {
+        id: screensaverLoader
+        anchors.fill: parent
+        z: 9999
+        active: false
+        source: active ? "Screensaver/main.qml" : ""
+    }
+
+    Component.onCompleted: {
+        if (settingsManager.screensaverEnabled) {
+            idleTimer.start()
+        }
+    }
+
     StackView {
         id: stack
         anchors.fill: parent

@@ -26,9 +26,13 @@ class SettingsManager(QObject):
     ttsVoiceChanged = Signal()
     ttsRateChanged = Signal()
     ttsVolumeChanged = Signal()
+    ttsDashPauseEnabledChanged = Signal()
+    ttsDashPauseDurationChanged = Signal()
     clickSpeakDelayChanged = Signal()
 
-    openOnSingleClickChanged = Signal()
+    speakTriggerChanged = Signal()
+    openTriggerChanged = Signal()
+    hoverDelayChanged = Signal()
     showHiddenFilesChanged = Signal()
     sortOrderChanged = Signal()
     hideDisabledNavButtonsChanged = Signal()
@@ -39,6 +43,11 @@ class SettingsManager(QObject):
     autoPlayNextChanged = Signal()
     announceNextFileChanged = Signal()
     autoPlayOnOpenChanged = Signal()
+
+    screensaverEnabledChanged = Signal()
+    screensaverTimeoutChanged = Signal()
+    screensaverImageDirectoryChanged = Signal()
+    screensaverImageIntervalChanged = Signal()
 
     DEFAULTS = {
         # Darstellung
@@ -51,9 +60,13 @@ class SettingsManager(QObject):
         "ttsVoice": "",
         "ttsRate": 0.0,        # -1.0 .. 1.0
         "ttsVolume": 1.0,      # 0.0 .. 1.0
+        "ttsDashPauseEnabled": True,
+        "ttsDashPauseDuration": 400,  # ms Pause nach " - "
         "clickSpeakDelay": 400,  # ms
         # Navigation
-        "openOnSingleClick": False,
+        "speakTrigger": "singleClick",   # "hover" | "singleClick" | "doubleClick"
+        "openTrigger": "doubleClick",    # "hover" | "singleClick" | "doubleClick"
+        "hoverDelay": 3000,              # ms Verzögerung bei Hover-Auslöser
         "showHiddenFiles": False,
         "sortOrder": "name_asc",  # name_asc | name_desc | date_desc | size_desc
         "hideDisabledNavButtons": False,  # deaktivierte Blättern-Buttons unsichtbar (Platz bleibt)
@@ -64,6 +77,11 @@ class SettingsManager(QObject):
         "autoPlayNext": False,
         "announceNextFile": True,   # nächste Folge per TTS ansagen
         "autoPlayOnOpen": True,     # Video beim Öffnen sofort abspielen
+        # Bildschirmschoner
+        "screensaverEnabled": True,
+        "screensaverTimeout": 120000,       # ms bis Aktivierung (Standard: 2 Minuten)
+        "screensaverImageDirectory": "",    # Ordner mit Slideshow-Bildern
+        "screensaverImageInterval": 5000,   # ms pro Bild
     }
 
     # Farbpaletten je Theme. Werden über die color*-Properties an QML
@@ -324,6 +342,22 @@ class SettingsManager(QObject):
     def ttsVolume(self, value):
         self._set("ttsVolume", float(value), self.ttsVolumeChanged)
 
+    @Property(bool, notify=ttsDashPauseEnabledChanged)
+    def ttsDashPauseEnabled(self):
+        return self._get("ttsDashPauseEnabled", bool)
+
+    @ttsDashPauseEnabled.setter
+    def ttsDashPauseEnabled(self, value):
+        self._set("ttsDashPauseEnabled", bool(value), self.ttsDashPauseEnabledChanged)
+
+    @Property(int, notify=ttsDashPauseDurationChanged)
+    def ttsDashPauseDuration(self):
+        return self._get("ttsDashPauseDuration", int)
+
+    @ttsDashPauseDuration.setter
+    def ttsDashPauseDuration(self, value):
+        self._set("ttsDashPauseDuration", int(value), self.ttsDashPauseDurationChanged)
+
     @Property(int, notify=clickSpeakDelayChanged)
     def clickSpeakDelay(self):
         return self._get("clickSpeakDelay", int)
@@ -333,13 +367,29 @@ class SettingsManager(QObject):
         self._set("clickSpeakDelay", int(value), self.clickSpeakDelayChanged)
 
     # ---- Navigation ----------------------------------------------------------
-    @Property(bool, notify=openOnSingleClickChanged)
-    def openOnSingleClick(self):
-        return self._get("openOnSingleClick", bool)
+    @Property(str, notify=speakTriggerChanged)
+    def speakTrigger(self):
+        return self._get("speakTrigger", str)
 
-    @openOnSingleClick.setter
-    def openOnSingleClick(self, value):
-        self._set("openOnSingleClick", bool(value), self.openOnSingleClickChanged)
+    @speakTrigger.setter
+    def speakTrigger(self, value):
+        self._set("speakTrigger", str(value), self.speakTriggerChanged)
+
+    @Property(str, notify=openTriggerChanged)
+    def openTrigger(self):
+        return self._get("openTrigger", str)
+
+    @openTrigger.setter
+    def openTrigger(self, value):
+        self._set("openTrigger", str(value), self.openTriggerChanged)
+
+    @Property(int, notify=hoverDelayChanged)
+    def hoverDelay(self):
+        return self._get("hoverDelay", int)
+
+    @hoverDelay.setter
+    def hoverDelay(self, value):
+        self._set("hoverDelay", int(value), self.hoverDelayChanged)
 
     @Property(bool, notify=showHiddenFilesChanged)
     def showHiddenFiles(self):
@@ -414,6 +464,102 @@ class SettingsManager(QObject):
     def autoPlayOnOpen(self, value):
         self._set("autoPlayOnOpen", bool(value), self.autoPlayOnOpenChanged)
 
+    # ---- Bildschirmschoner ---------------------------------------------------
+    @Property(bool, notify=screensaverEnabledChanged)
+    def screensaverEnabled(self):
+        return self._get("screensaverEnabled", bool)
+
+    @screensaverEnabled.setter
+    def screensaverEnabled(self, value):
+        self._set("screensaverEnabled", bool(value), self.screensaverEnabledChanged)
+
+    @Property(int, notify=screensaverTimeoutChanged)
+    def screensaverTimeout(self):
+        return self._get("screensaverTimeout", int)
+
+    @screensaverTimeout.setter
+    def screensaverTimeout(self, value):
+        self._set("screensaverTimeout", int(value), self.screensaverTimeoutChanged)
+
+    @Property(str, notify=screensaverImageDirectoryChanged)
+    def screensaverImageDirectory(self):
+        return self._get("screensaverImageDirectory", str)
+
+    @screensaverImageDirectory.setter
+    def screensaverImageDirectory(self, value):
+        self._set("screensaverImageDirectory", str(value), self.screensaverImageDirectoryChanged)
+
+    @Property(int, notify=screensaverImageIntervalChanged)
+    def screensaverImageInterval(self):
+        return self._get("screensaverImageInterval", int)
+
+    @screensaverImageInterval.setter
+    def screensaverImageInterval(self, value):
+        self._set("screensaverImageInterval", int(value), self.screensaverImageIntervalChanged)
+
+    @Slot(result="QVariantList")
+    def get_screensaver_images(self) -> list:
+        """Gibt alle Bilddateien aus dem Bildschirmschoner-Verzeichnis als file://-URLs zurück."""
+        directory = self._get("screensaverImageDirectory", str)
+        if not directory:
+            return []
+        import os
+        from pathlib import Path
+        image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
+        try:
+            files = sorted(
+                Path(directory) / f
+                for f in os.listdir(directory)
+                if Path(f).suffix.lower() in image_extensions
+            )
+            return [p.as_uri() for p in files if p.is_file()]
+        except OSError:
+            return []
+
+    # ---- Regex-Filter-Regeln ------------------------------------------------
+    def _write_regex_rules(self, rules: list):
+        self._settings.remove("regex_rules")
+        self._settings.beginWriteArray("regex_rules", len(rules))
+        for i, rule in enumerate(rules):
+            self._settings.setArrayIndex(i)
+            self._settings.setValue("pattern", rule.get("pattern", ""))
+            self._settings.setValue("replacement", rule.get("replacement", ""))
+        self._settings.endArray()
+        self._settings.sync()
+
+    @Slot(result="QVariantList")
+    def get_regex_rules(self) -> list:
+        result = []
+        size = self._settings.beginReadArray("regex_rules")
+        for i in range(size):
+            self._settings.setArrayIndex(i)
+            result.append({
+                "pattern": self._settings.value("pattern", "", type=str),
+                "replacement": self._settings.value("replacement", "", type=str),
+            })
+        self._settings.endArray()
+        return result
+
+    @Slot(str, str)
+    def add_regex_rule(self, pattern: str, replacement: str):
+        rules = self.get_regex_rules()
+        rules.append({"pattern": pattern, "replacement": replacement})
+        self._write_regex_rules(rules)
+
+    @Slot(int)
+    def remove_regex_rule(self, index: int):
+        rules = self.get_regex_rules()
+        if 0 <= index < len(rules):
+            rules.pop(index)
+            self._write_regex_rules(rules)
+
+    @Slot(int, str, str)
+    def update_regex_rule(self, index: int, pattern: str, replacement: str):
+        rules = self.get_regex_rules()
+        if 0 <= index < len(rules):
+            rules[index] = {"pattern": pattern, "replacement": replacement}
+            self._write_regex_rules(rules)
+
     # ---- Reset ---------------------------------------------------------------
     @Slot()
     def reset_to_defaults(self):
@@ -428,11 +574,15 @@ class SettingsManager(QObject):
             self.fontScaleChanged, self.themeChanged,
             self.ttsEnabledChanged, self.ttsVoiceChanged,
             self.ttsRateChanged, self.ttsVolumeChanged,
+            self.ttsDashPauseEnabledChanged, self.ttsDashPauseDurationChanged,
             self.clickSpeakDelayChanged,
-            self.openOnSingleClickChanged, self.showHiddenFilesChanged,
+            self.speakTriggerChanged, self.openTriggerChanged, self.hoverDelayChanged,
+            self.showHiddenFilesChanged,
             self.sortOrderChanged, self.hideDisabledNavButtonsChanged,
             self.defaultVolumeChanged, self.resumePlaybackChanged,
             self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
             self.announceNextFileChanged, self.autoPlayOnOpenChanged,
+            self.screensaverEnabledChanged, self.screensaverTimeoutChanged,
+            self.screensaverImageDirectoryChanged, self.screensaverImageIntervalChanged,
         ]:
             sig.emit()

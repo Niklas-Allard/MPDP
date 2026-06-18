@@ -10,6 +10,8 @@ from PySide6.QtQuickControls2 import QQuickStyle
 from fileHandler import fileHandler
 from media_DB import Media_DB
 from settings_manager import SettingsManager
+from activity_monitor import ActivityMonitor
+from regex_filter import RegexFilter
 
 if __name__ == "__main__":
     # Organisation/Anwendungsnamen setzen, damit QSettings konsistent funktioniert
@@ -29,9 +31,17 @@ if __name__ == "__main__":
     print("registerResource:", ok)
     print("exists:", QFile.exists(":/icons/arrow_forward.png"))
 
+    # Globaler Aktivitäts-Detektor für den Bildschirmschoner
+    activity_monitor = ActivityMonitor(app)
+    engine.rootContext().setContextProperty("activityMonitor", activity_monitor)
+
     # Settings (QSettings-basiert) – ersetzt die alte user_data.json
     settings_manager = SettingsManager()
     engine.rootContext().setContextProperty("settingsManager", settings_manager)
+
+    # Regex-Filter für TTS-Text
+    regex_filter = RegexFilter(settings_manager)
+    engine.rootContext().setContextProperty("regexFilter", regex_filter)
 
     # create fileHandler instance (nutzt den SettingsManager für globalImageDirectory)
     fileManager = fileHandler(settings_manager=settings_manager)
