@@ -12,15 +12,20 @@ Item {
     property int minCardHeight: settingsManager.cardMinHeight
     property int currentPage: 0
 
+    Component.onDestruction: {
+        tts.stop()
+    }
+
     TextToSpeech {
         id: tts
+        engine: "winrt"
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
         Component.onCompleted: startPage.applyTtsVoice()
         onStateChanged: {
             if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
                     && startPage._ttsQueue.length > 0) {
-                dashPauseTimer.start()
+                startPage.processNextQueueItem()
             }
         }
     }
@@ -31,11 +36,7 @@ Item {
         id: dashPauseTimer
         interval: settingsManager.ttsDashPauseDuration
         repeat: false
-        onTriggered: {
-            if (startPage._ttsQueue.length > 0) {
-                tts.say(startPage._ttsQueue.shift())
-            }
-        }
+        onTriggered: startPage.speakNextFromQueue()
     }
 
     // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
@@ -45,9 +46,76 @@ Item {
             for (var i = 0; i < voices.length; i++) {
                 if (voices[i].name === settingsManager.ttsVoice) {
                     tts.voice = voices[i]
-                    break
+                    return
                 }
             }
+        }
+    }
+
+    function applyVoiceByName(voiceName) {
+        var voices = tts.availableVoices()
+        for (var i = 0; i < voices.length; i++) {
+            if (voices[i].name === voiceName) {
+                tts.voice = voices[i]
+                return
+            }
+        }
+    }
+
+    // Segmentiert Text anhand der Wortaussprache-Liste in {text, voice, pause}-Objekte.
+    function buildTtsSegments(text, wordProns, withPause) {
+        var segs = [{text: text, voice: null}]
+        for (var i = 0; i < wordProns.length; i++) {
+            var entry = wordProns[i]
+            var escaped = entry.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            var re = new RegExp("\\b(" + escaped + ")\\b", "gi")
+            var newSegs = []
+            for (var j = 0; j < segs.length; j++) {
+                var seg = segs[j]
+                if (seg.voice !== null) { newSegs.push(seg); continue }
+                var src = seg.text
+                var lastIdx = 0
+                var m
+                re.lastIndex = 0
+                while ((m = re.exec(src)) !== null) {
+                    if (m.index > lastIdx)
+                        newSegs.push({text: src.slice(lastIdx, m.index), voice: null})
+                    newSegs.push({text: m[0], voice: entry.voice})
+                    lastIdx = re.lastIndex
+                }
+                if (lastIdx < src.length)
+                    newSegs.push({text: src.slice(lastIdx), voice: null})
+            }
+            segs = newSegs
+        }
+        var result = []
+        var first = true
+        for (var k = 0; k < segs.length; k++) {
+            if (segs[k].text.trim().length === 0) continue
+            segs[k].pause = withPause && first
+            first = false
+            result.push(segs[k])
+        }
+        return result
+    }
+
+    function speakNextFromQueue() {
+        if (startPage._ttsQueue.length === 0) return
+        var item = startPage._ttsQueue.shift()
+        if (item.voice) {
+            startPage.applyVoiceByName(item.voice)
+        } else {
+            startPage.applyTtsVoice()
+        }
+        tts.say(item.text)
+    }
+
+    function processNextQueueItem() {
+        if (startPage._ttsQueue.length === 0) return
+        if (startPage._ttsQueue[0].pause) {
+            dashPauseTimer.start()
+        } else {
+            startPage.speakNextFromQueue()
         }
     }
 
@@ -58,15 +126,26 @@ Item {
 
     function speakIfEnabled(text) {
         if (!settingsManager.ttsEnabled) return
+        text = regexFilter.apply(text)
         tts.stop()
         startPage._ttsQueue = []
+
+        var wordProns = []
+        try { wordProns = JSON.parse(settingsManager.wordPronunciations || "[]") } catch (e) {}
+
         if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
             var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
-            startPage._ttsQueue = parts
-            if (startPage._ttsQueue.length > 0) tts.say(startPage._ttsQueue.shift())
+            var queue = []
+            for (var p = 0; p < parts.length; p++) {
+                var segs = startPage.buildTtsSegments(parts[p], wordProns, p > 0)
+                for (var s = 0; s < segs.length; s++) queue.push(segs[s])
+            }
+            startPage._ttsQueue = queue
         } else {
-            tts.say(text)
+            startPage._ttsQueue = startPage.buildTtsSegments(text, wordProns, false)
         }
+
+        if (startPage._ttsQueue.length > 0) startPage.speakNextFromQueue()
     }
 
     // Header mit aktuellem Pfad/Namen
@@ -79,6 +158,12 @@ Item {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 10
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: startPage.speakIfEnabled(headerText.text)
+        }
     }
 
     GridLayout {
@@ -121,6 +206,7 @@ Item {
                     id: mouseAreaCard
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: settingsManager.speakTrigger === "hover" || settingsManager.openTrigger === "hover"
                     property string pendingSpeak: ""
 
                     function openItem() {
@@ -135,19 +221,58 @@ Item {
                         onTriggered: startPage.speakIfEnabled(mouseAreaCard.pendingSpeak)
                     }
 
-                    onClicked: {
-                        if (settingsManager.openOnSingleClick) {
-                            speakTimer.stop()
-                            openItem()
+                    // Hover-Timers laufen nur, solange die Maus über der Karte ist
+                    Timer {
+                        id: hoverSpeakTimer
+                        interval: settingsManager.hoverDelay
+                        repeat: false
+                        onTriggered: startPage.speakIfEnabled(mouseAreaCard.pendingSpeak)
+                    }
+
+                    Timer {
+                        id: hoverOpenTimer
+                        interval: settingsManager.hoverDelay
+                        repeat: false
+                        onTriggered: openItem()
+                    }
+
+                    onContainsMouseChanged: {
+                        if (containsMouse) {
+                            if (settingsManager.speakTrigger === "hover") {
+                                mouseAreaCard.pendingSpeak = modelData.name
+                                hoverSpeakTimer.restart()
+                            }
+                            if (settingsManager.openTrigger === "hover") {
+                                hoverOpenTimer.restart()
+                            }
                         } else {
-                            mouseAreaCard.pendingSpeak = modelData.name
-                            speakTimer.restart()
+                            hoverSpeakTimer.stop()
+                            hoverOpenTimer.stop()
                         }
                     }
 
-                    onDoubleClicked: (mouse) => {
+                    onClicked: {
+                        if (settingsManager.speakTrigger === "singleClick") {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
+                        if (settingsManager.openTrigger === "singleClick") {
+                            speakTimer.stop()
+                            openItem()
+                        }
+                    }
+
+                    onDoubleClicked: {
                         speakTimer.stop()
-                        openItem()
+                        hoverSpeakTimer.stop()
+                        hoverOpenTimer.stop()
+                        if (settingsManager.speakTrigger === "doubleClick") {
+                            mouseAreaCard.pendingSpeak = modelData.name
+                            speakTimer.restart()
+                        }
+                        if (settingsManager.openTrigger === "doubleClick") {
+                            openItem()
+                        }
                     }
                 }
 
