@@ -10,9 +10,13 @@ ScrollView {
 
     TextToSpeech {
         id: ttsProbe
+        engine: "winrt"
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
         onStateChanged: {
+            if (state === TextToSpeech.Ready) {
+                langCombo.refresh()
+            }
             if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
                     && root._ttsQueue.length > 0) {
                 ttsPauseTimer.start()
@@ -45,6 +49,8 @@ ScrollView {
         }
     }
 
+    Component.onCompleted: langCombo.refresh()
+
     ColumnLayout {
         width: parent.availableWidth
         spacing: 12
@@ -58,6 +64,65 @@ ScrollView {
             }
         }
 
+        // ── Sprache ───────────────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            Label { text: "Sprache"; Layout.preferredWidth: 220 }
+            ComboBox {
+                id: langCombo
+                Layout.fillWidth: true
+                enabled: settingsManager.ttsEnabled
+
+                property var localeList: []
+
+                function refresh() {
+                    var voices = ttsProbe.availableVoices()
+                    if (voices.length === 0) return
+
+                    // Eindeutige Locales aus den verfügbaren Stimmen ableiten
+                    var seen = {}
+                    var locales = []
+                    for (var i = 0; i < voices.length; i++) {
+                        var lname = voices[i].locale.name
+                        if (!seen[lname]) {
+                            seen[lname] = true
+                            locales.push(voices[i].locale)
+                        }
+                    }
+                    localeList = locales
+
+                    var names = []
+                    for (var j = 0; j < locales.length; j++) {
+                        var l = locales[j]
+                        var display = l.nativeLanguageName
+                        if (l.nativeTerritoryName && l.nativeTerritoryName !== l.nativeLanguageName)
+                            display += " (" + l.nativeTerritoryName + ")"
+                        names.push(display)
+                    }
+                    var prevIndex = currentIndex
+                    model = names
+
+                    // Sprache der gespeicherten Stimme vorauswählen
+                    var savedVoice = settingsManager.ttsVoice
+                    for (var v = 0; v < voices.length; v++) {
+                        if (voices[v].name === savedVoice) {
+                            for (var li = 0; li < locales.length; li++) {
+                                if (locales[li].name === voices[v].locale.name) {
+                                    currentIndex = li
+                                    break
+                                }
+                            }
+                            break
+                        }
+                    }
+                    voiceCombo.refresh()
+                }
+
+                onActivated: voiceCombo.refresh()
+            }
+        }
+
+        // ── Stimme ────────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
             Label { text: "Stimme"; Layout.preferredWidth: 220 }
@@ -65,25 +130,35 @@ ScrollView {
                 id: voiceCombo
                 Layout.fillWidth: true
                 enabled: settingsManager.ttsEnabled
-                model: {
+
+                property var voiceList: []
+
+                function refresh() {
+                    if (langCombo.localeList.length === 0) return
+                    var selectedLocale = langCombo.localeList[langCombo.currentIndex]
+                    if (!selectedLocale) return
+
                     var voices = ttsProbe.availableVoices()
-                    var names = []
-                    for (var i = 0; i < voices.length; i++) names.push(voices[i].name)
-                    return names
-                }
-                Component.onCompleted: {
-                    var idx = model.indexOf(settingsManager.ttsVoice)
-                    if (idx >= 0) currentIndex = idx
-                }
-                onActivated: {
-                    settingsManager.ttsVoice = currentText
-                    var voices = ttsProbe.availableVoices()
+                    var filtered = []
                     for (var i = 0; i < voices.length; i++) {
-                        if (voices[i].name === currentText) {
-                            ttsProbe.voice = voices[i]
-                            break
-                        }
+                        if (voices[i].locale.name === selectedLocale.name)
+                            filtered.push(voices[i])
                     }
+                    voiceList = filtered
+
+                    var names = []
+                    for (var j = 0; j < filtered.length; j++) names.push(filtered[j].name)
+                    model = names
+
+                    // Gespeicherte Stimme wiederherstellen, sonst erste nehmen
+                    var idx = names.indexOf(settingsManager.ttsVoice)
+                    currentIndex = idx >= 0 ? idx : 0
+                }
+
+                onActivated: {
+                    if (currentIndex < 0 || currentIndex >= voiceList.length) return
+                    settingsManager.ttsVoice = currentText
+                    ttsProbe.voice = voiceList[currentIndex]
                 }
             }
         }
@@ -146,6 +221,14 @@ ScrollView {
                 text: "Probehören"
                 enabled: settingsManager.ttsEnabled
                 onClicked: root.speakTest("Hallo - dies ist ein Test - der Sprachausgabe.")
+            }
+            Button {
+                text: "Stimmen aktualisieren"
+                onClicked: langCombo.refresh()
+            }
+            Button {
+                text: "Weitere Stimmen installieren …"
+                onClicked: Qt.openUrlExternally("ms-settings:speech")
             }
         }
 

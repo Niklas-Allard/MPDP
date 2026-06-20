@@ -50,13 +50,14 @@ Item {
 
     TextToSpeech {
         id: tts
+        engine: "winrt"
         volume: settingsManager.ttsVolume
         rate: settingsManager.ttsRate
         Component.onCompleted: root.applyTtsVoice()
         onStateChanged: {
             if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
                     && root._ttsQueue.length > 0) {
-                dashPauseTimer.start()
+                root.processNextQueueItem()
             }
         }
     }
@@ -67,11 +68,7 @@ Item {
         id: dashPauseTimer
         interval: settingsManager.ttsDashPauseDuration
         repeat: false
-        onTriggered: {
-            if (root._ttsQueue.length > 0) {
-                tts.say(root._ttsQueue.shift())
-            }
-        }
+        onTriggered: root.speakNextFromQueue()
     }
 
     // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
@@ -81,9 +78,76 @@ Item {
             for (var i = 0; i < voices.length; i++) {
                 if (voices[i].name === settingsManager.ttsVoice) {
                     tts.voice = voices[i]
-                    break
+                    return
                 }
             }
+        }
+    }
+
+    function applyVoiceByName(voiceName) {
+        var voices = tts.availableVoices()
+        for (var i = 0; i < voices.length; i++) {
+            if (voices[i].name === voiceName) {
+                tts.voice = voices[i]
+                return
+            }
+        }
+    }
+
+    // Segmentiert Text anhand der Wortaussprache-Liste in {text, voice, pause}-Objekte.
+    function buildTtsSegments(text, wordProns, withPause) {
+        var segs = [{text: text, voice: null}]
+        for (var i = 0; i < wordProns.length; i++) {
+            var entry = wordProns[i]
+            var escaped = entry.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            var re = new RegExp("\\b(" + escaped + ")\\b", "gi")
+            var newSegs = []
+            for (var j = 0; j < segs.length; j++) {
+                var seg = segs[j]
+                if (seg.voice !== null) { newSegs.push(seg); continue }
+                var src = seg.text
+                var lastIdx = 0
+                var m
+                re.lastIndex = 0
+                while ((m = re.exec(src)) !== null) {
+                    if (m.index > lastIdx)
+                        newSegs.push({text: src.slice(lastIdx, m.index), voice: null})
+                    newSegs.push({text: m[0], voice: entry.voice})
+                    lastIdx = re.lastIndex
+                }
+                if (lastIdx < src.length)
+                    newSegs.push({text: src.slice(lastIdx), voice: null})
+            }
+            segs = newSegs
+        }
+        var result = []
+        var first = true
+        for (var k = 0; k < segs.length; k++) {
+            if (segs[k].text.trim().length === 0) continue
+            segs[k].pause = withPause && first
+            first = false
+            result.push(segs[k])
+        }
+        return result
+    }
+
+    function speakNextFromQueue() {
+        if (root._ttsQueue.length === 0) return
+        var item = root._ttsQueue.shift()
+        if (item.voice) {
+            root.applyVoiceByName(item.voice)
+        } else {
+            root.applyTtsVoice()
+        }
+        tts.say(item.text)
+    }
+
+    function processNextQueueItem() {
+        if (root._ttsQueue.length === 0) return
+        if (root._ttsQueue[0].pause) {
+            dashPauseTimer.start()
+        } else {
+            root.speakNextFromQueue()
         }
     }
 
@@ -112,13 +176,23 @@ Item {
         text = regexFilter.apply(text)
         tts.stop()
         root._ttsQueue = []
+
+        var wordProns = []
+        try { wordProns = JSON.parse(settingsManager.wordPronunciations || "[]") } catch (e) {}
+
         if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
             var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
-            root._ttsQueue = parts
-            if (root._ttsQueue.length > 0) tts.say(root._ttsQueue.shift())
+            var queue = []
+            for (var p = 0; p < parts.length; p++) {
+                var segs = root.buildTtsSegments(parts[p], wordProns, p > 0)
+                for (var s = 0; s < segs.length; s++) queue.push(segs[s])
+            }
+            root._ttsQueue = queue
         } else {
-            tts.say(text)
+            root._ttsQueue = root.buildTtsSegments(text, wordProns, false)
         }
+
+        if (root._ttsQueue.length > 0) root.speakNextFromQueue()
     }
 
     Grid {

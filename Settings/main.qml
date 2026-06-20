@@ -26,6 +26,7 @@ Item {
 
         TabButton { text: "Darstellung" }
         TabButton { text: "Sprachausgabe" }
+        TabButton { text: "Aussprache" }
         TabButton { text: "Navigation" }
         TabButton { text: "Wiedergabe" }
         TabButton { text: "Verzeichnisse" }
@@ -43,13 +44,14 @@ Item {
         anchors.rightMargin: 16
         currentIndex: tabBar.currentIndex
 
-        TabAppearance  {}
-        TabSpeech      {}
-        TabNavigation  {}
-        TabPlayback    {}
-        TabDirectories {}
-        TabScreensaver {}
-        TabTextFilter  {}
+        TabAppearance          {}
+        TabSpeech              {}
+        TabWordPronunciation   {}
+        TabNavigation          {}
+        TabPlayback            {}
+        TabDirectories         {}
+        TabScreensaver         {}
+        TabTextFilter          {}
     }
 
     RowLayout {

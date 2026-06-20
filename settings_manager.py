@@ -8,11 +8,13 @@ from Settings.media import MediaMixin
 from Settings.screensaver import ScreensaverMixin
 from Settings.directories import DirectoriesMixin
 from Settings.regex_rules import RegexRulesMixin
+from Settings.word_pronunciation import WordPronunciationMixin
 
 
 class SettingsManager(
     AppearanceMixin,
     TTSMixin,
+    WordPronunciationMixin,
     NavigationMixin,
     MediaMixin,
     ScreensaverMixin,
@@ -45,5 +47,6 @@ class SettingsManager(
             self.announceNextFileChanged, self.autoPlayOnOpenChanged,
             self.screensaverEnabledChanged, self.screensaverTimeoutChanged,
             self.screensaverImageDirectoryChanged, self.screensaverImageIntervalChanged,
+            self.wordPronunciationsChanged,
         ]:
             sig.emit()

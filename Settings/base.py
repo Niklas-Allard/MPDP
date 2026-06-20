@@ -33,6 +33,7 @@ class SettingsBase:
         "screensaverTimeout": 120000,
         "screensaverImageDirectory": "",
         "screensaverImageInterval": 5000,
+        "wordPronunciations": "[]",
     }
 
     THEME_PALETTES = {

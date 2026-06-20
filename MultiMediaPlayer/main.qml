@@ -28,15 +28,16 @@ Item {
     // Sprachausgabe für die Ansage der nächsten Folge
     TextToSpeech {
         id: tts
+        engine: "winrt"
         volume: settingsManager ? settingsManager.ttsVolume : 1.0
         rate: settingsManager ? settingsManager.ttsRate : 0.0
         Component.onCompleted: multiMediaPlayerPage.applyTtsVoice()
 
         onStateChanged: {
             if (state === TextToSpeech.Ready || state === TextToSpeech.Error) {
-                // Erst die Queue abarbeiten (Pausen bei " - ")
+                // Erst die Queue abarbeiten (Pausen bei " - " oder Stimmwechsel)
                 if (multiMediaPlayerPage._ttsQueue.length > 0) {
-                    dashPauseTimer.start()
+                    multiMediaPlayerPage.processNextQueueItem()
                     return
                 }
                 // Queue leer: Video starten wenn Ansage abgeschlossen
@@ -54,11 +55,7 @@ Item {
         id: dashPauseTimer
         interval: settingsManager ? settingsManager.ttsDashPauseDuration : 400
         repeat: false
-        onTriggered: {
-            if (multiMediaPlayerPage._ttsQueue.length > 0) {
-                tts.say(multiMediaPlayerPage._ttsQueue.shift())
-            }
-        }
+        onTriggered: multiMediaPlayerPage.speakNextFromQueue()
     }
 
     Connections {
@@ -73,9 +70,75 @@ Item {
             for (var i = 0; i < voices.length; i++) {
                 if (voices[i].name === settingsManager.ttsVoice) {
                     tts.voice = voices[i]
-                    break
+                    return
                 }
             }
+        }
+    }
+
+    function applyVoiceByName(voiceName) {
+        var voices = tts.availableVoices()
+        for (var i = 0; i < voices.length; i++) {
+            if (voices[i].name === voiceName) {
+                tts.voice = voices[i]
+                return
+            }
+        }
+    }
+
+    function buildTtsSegments(text, wordProns, withPause) {
+        var segs = [{text: text, voice: null}]
+        for (var i = 0; i < wordProns.length; i++) {
+            var entry = wordProns[i]
+            var escaped = entry.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            var re = new RegExp("\\b(" + escaped + ")\\b", "gi")
+            var newSegs = []
+            for (var j = 0; j < segs.length; j++) {
+                var seg = segs[j]
+                if (seg.voice !== null) { newSegs.push(seg); continue }
+                var src = seg.text
+                var lastIdx = 0
+                var m
+                re.lastIndex = 0
+                while ((m = re.exec(src)) !== null) {
+                    if (m.index > lastIdx)
+                        newSegs.push({text: src.slice(lastIdx, m.index), voice: null})
+                    newSegs.push({text: m[0], voice: entry.voice})
+                    lastIdx = re.lastIndex
+                }
+                if (lastIdx < src.length)
+                    newSegs.push({text: src.slice(lastIdx), voice: null})
+            }
+            segs = newSegs
+        }
+        var result = []
+        var first = true
+        for (var k = 0; k < segs.length; k++) {
+            if (segs[k].text.trim().length === 0) continue
+            segs[k].pause = withPause && first
+            first = false
+            result.push(segs[k])
+        }
+        return result
+    }
+
+    function speakNextFromQueue() {
+        if (multiMediaPlayerPage._ttsQueue.length === 0) return
+        var item = multiMediaPlayerPage._ttsQueue.shift()
+        if (item.voice) {
+            multiMediaPlayerPage.applyVoiceByName(item.voice)
+        } else {
+            multiMediaPlayerPage.applyTtsVoice()
+        }
+        tts.say(item.text)
+    }
+
+    function processNextQueueItem() {
+        if (multiMediaPlayerPage._ttsQueue.length === 0) return
+        if (multiMediaPlayerPage._ttsQueue[0].pause) {
+            dashPauseTimer.start()
+        } else {
+            multiMediaPlayerPage.speakNextFromQueue()
         }
     }
 
@@ -139,13 +202,21 @@ Item {
                     var announceText = "Nächste Folge: " + fileName
                     tts.stop()
                     multiMediaPlayerPage._ttsQueue = []
+                    var wordProns2 = []
+                    try { wordProns2 = JSON.parse(settingsManager.wordPronunciations || "[]") } catch (e2) {}
                     if (settingsManager.ttsDashPauseEnabled && announceText.indexOf(" - ") >= 0) {
-                        var parts = announceText.split(" - ").filter(function(s) { return s.trim().length > 0 })
-                        multiMediaPlayerPage._ttsQueue = parts
-                        tts.say(multiMediaPlayerPage._ttsQueue.shift())
+                        var parts2 = announceText.split(" - ").filter(function(s) { return s.trim().length > 0 })
+                        var queue2 = []
+                        for (var p2 = 0; p2 < parts2.length; p2++) {
+                            var segs2 = multiMediaPlayerPage.buildTtsSegments(parts2[p2], wordProns2, p2 > 0)
+                            for (var s2 = 0; s2 < segs2.length; s2++) queue2.push(segs2[s2])
+                        }
+                        multiMediaPlayerPage._ttsQueue = queue2
                     } else {
-                        tts.say(announceText)
+                        multiMediaPlayerPage._ttsQueue = multiMediaPlayerPage.buildTtsSegments(announceText, wordProns2, false)
                     }
+                    if (multiMediaPlayerPage._ttsQueue.length > 0)
+                        multiMediaPlayerPage.speakNextFromQueue()
                 } else if (!settingsManager || settingsManager.autoPlayOnOpen) {
                     // Ohne Ansage: direkt weiterspielen
                     mediaplayer.play()
