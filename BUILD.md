@@ -192,6 +192,7 @@ Plugins werden von Qt beim Start dynamisch geladen. Fehlende Plugins führen zu 
 | `qmltooling`             | QML-Debugging                                     | ✓       | ✓     | ✓     |
 | `scenegraph`             | Qt Quick Scene-Graph (OpenGL/Vulkan)              | ✓       | ✓     | ✓     |
 | `tls`                    | TLS/SSL (für interne Qt-Verbindungen)             | ✓       | ✓     | ✓     |
+| `texttospeech`           | TTS-Backends (SAPI/WinRT/AVSpeech/speech-dispatcher) | ✓    | ✓     | ✓     |
 | `wayland`                | Wayland-Backend (nur Linux)                       | –       | –     | ✓     |
 
 ### Ausgeschlossene QML-Plugins

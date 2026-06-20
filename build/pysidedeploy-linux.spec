@@ -26,7 +26,7 @@ modules = Core,Gui,Qml,Quick,QuickControls2,Multimedia,TextToSpeech,Concurrent,N
 # xcb     - X11 Backend (Standard auf Desktop-Linux)
 # wayland - Wayland Backend (Hyprland, Sway, GNOME Wayland, etc.)
 # eglfs   - Embedded Linux / DRM ohne Display-Server
-plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls,wayland
+plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls,texttospeech,wayland
 
 [android]
 

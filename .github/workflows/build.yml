@@ -65,7 +65,15 @@ jobs:
         run: |
           $env:PATH = "$PWD\.venv313\Scripts;$env:PATH"
           $env:VIRTUAL_ENV = "$PWD\.venv313"
-          pyside6-deploy -c pysidedeploy.spec main.py --extra-modules Multimedia,TextToSpeech --mode standalone
+          if (Test-Path "dist") { Remove-Item dist -Recurse -Force }
+          pyside6-deploy -c pysidedeploy.spec main.py --extra-modules Multimedia,TextToSpeech --mode standalone --windows-console-mode=disable
+          # pyside6-deploy kann Exitcode 0 liefern, obwohl der interne Nuitka-Aufruf
+          # fehlgeschlagen ist - daher den tatsaechlichen Build-Output pruefen.
+          $exe = Get-ChildItem dist -Recurse -Filter main.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "Build fehlgeschlagen - main.exe wurde nicht erzeugt."
+            exit 1
+          }
 
       - name: Unnoetige Verzeichnisse aus dist entfernen
         shell: pwsh
@@ -128,10 +136,14 @@ jobs:
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         shell: pwsh
         run: |
-          if (-not (Test-Path "resources.rcc")) {
-            $rcc = (.venv313\Scripts\python.exe -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
-            if (Test-Path $rcc) { & $rcc -binary resources.qrc -o resources.rcc }
-            else { Write-Error "resources.rcc nicht gefunden!"; exit 1 }
+          $rcc = (.venv313\Scripts\python.exe -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc.exe'))")
+          if (Test-Path $rcc) {
+            & $rcc -binary resources.qrc -o resources.rcc
+          } elseif (Test-Path "resources.rcc") {
+            Write-Host "resources.rcc bereits vorhanden, wird verwendet."
+          } else {
+            Write-Error "resources.rcc nicht gefunden und rcc.exe nicht verfügbar!"
+            exit 1
           }
 
       - name: pyside6-deploy (Windows ARM64)
@@ -139,7 +151,15 @@ jobs:
         run: |
           $env:PATH = "$PWD\.venv313\Scripts;$env:PATH"
           $env:VIRTUAL_ENV = "$PWD\.venv313"
-          pyside6-deploy -c build/pysidedeploy-windows-arm64.spec main.py
+          if (Test-Path "dist") { Remove-Item dist -Recurse -Force }
+          pyside6-deploy -c build/pysidedeploy-windows-arm64.spec main.py --extra-modules Multimedia,TextToSpeech --mode standalone --windows-console-mode=disable
+          # pyside6-deploy kann Exitcode 0 liefern, obwohl der interne Nuitka-Aufruf
+          # fehlgeschlagen ist - daher den tatsaechlichen Build-Output pruefen.
+          $exe = Get-ChildItem dist -Recurse -Filter main.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "Build fehlgeschlagen - main.exe wurde nicht erzeugt."
+            exit 1
+          }
 
       - name: Unnoetige Verzeichnisse aus dist entfernen
         shell: pwsh
@@ -194,21 +214,27 @@ jobs:
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         run: |
-          if [ ! -f resources.rcc ]; then
-            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
-            if [ -f "$RCC" ]; then
-              "$RCC" -binary resources.qrc -o resources.rcc
-            else
-              echo "resources.rcc nicht gefunden!" && exit 1
-            fi
+          RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+          if [ -f "$RCC" ]; then
+            "$RCC" -binary resources.qrc -o resources.rcc
+          elif [ -f resources.rcc ]; then
+            echo "resources.rcc bereits vorhanden, wird verwendet."
+          else
+            echo "resources.rcc nicht gefunden und rcc nicht verfuegbar!" && exit 1
           fi
 
       - name: pyside6-deploy (macOS Intel, x86_64)
         run: |
           export PATH="$PWD/.venv/bin:$PATH"
           export VIRTUAL_ENV="$PWD/.venv"
+          rm -rf dist
           pyside6-deploy -c build/pysidedeploy-macos.spec main.py \
             --extra-modules Multimedia,TextToSpeech --mode standalone
+          # pyside6-deploy kann Exitcode 0 liefern, obwohl der interne Nuitka-Aufruf
+          # fehlgeschlagen ist - daher den tatsaechlichen Build-Output pruefen.
+          if [ -z "$(find dist -maxdepth 1 -type d ! -name dist 2>/dev/null)" ]; then
+            echo "Build fehlgeschlagen - kein dist-Verzeichnis erzeugt." && exit 1
+          fi
 
       - name: Unnoetige Verzeichnisse bereinigen
         run: |
@@ -258,21 +284,27 @@ jobs:
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         run: |
-          if [ ! -f resources.rcc ]; then
-            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
-            if [ -f "$RCC" ]; then
-              "$RCC" -binary resources.qrc -o resources.rcc
-            else
-              echo "resources.rcc nicht gefunden!" && exit 1
-            fi
+          RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+          if [ -f "$RCC" ]; then
+            "$RCC" -binary resources.qrc -o resources.rcc
+          elif [ -f resources.rcc ]; then
+            echo "resources.rcc bereits vorhanden, wird verwendet."
+          else
+            echo "resources.rcc nicht gefunden und rcc nicht verfuegbar!" && exit 1
           fi
 
       - name: pyside6-deploy (macOS ARM64)
         run: |
           export PATH="$PWD/.venv/bin:$PATH"
           export VIRTUAL_ENV="$PWD/.venv"
+          rm -rf dist
           pyside6-deploy -c build/pysidedeploy-macos.spec main.py \
             --extra-modules Multimedia,TextToSpeech --mode standalone
+          # pyside6-deploy kann Exitcode 0 liefern, obwohl der interne Nuitka-Aufruf
+          # fehlgeschlagen ist - daher den tatsaechlichen Build-Output pruefen.
+          if [ -z "$(find dist -maxdepth 1 -type d ! -name dist 2>/dev/null)" ]; then
+            echo "Build fehlgeschlagen - kein dist-Verzeichnis erzeugt." && exit 1
+          fi
 
       - name: Unnoetige Verzeichnisse bereinigen
         run: |
@@ -394,21 +426,27 @@ jobs:
 
       - name: Qt-Ressourcen kompilieren (resources.rcc)
         run: |
-          if [ ! -f resources.rcc ]; then
-            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
-            if [ -f "$RCC" ]; then
-              "$RCC" -binary resources.qrc -o resources.rcc
-            else
-              echo "resources.rcc nicht gefunden!" && exit 1
-            fi
+          RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+          if [ -f "$RCC" ]; then
+            "$RCC" -binary resources.qrc -o resources.rcc
+          elif [ -f resources.rcc ]; then
+            echo "resources.rcc bereits vorhanden, wird verwendet."
+          else
+            echo "resources.rcc nicht gefunden und rcc nicht verfuegbar!" && exit 1
           fi
 
       - name: pyside6-deploy (Linux x86_64)
         run: |
           export PATH="$PWD/.venv/bin:$PATH"
           export VIRTUAL_ENV="$PWD/.venv"
+          rm -rf dist
           pyside6-deploy -c build/pysidedeploy-linux.spec main.py \
             --extra-modules Multimedia,TextToSpeech --mode standalone
+          # pyside6-deploy kann Exitcode 0 liefern, obwohl der interne Nuitka-Aufruf
+          # fehlgeschlagen ist - daher den tatsaechlichen Build-Output pruefen.
+          if [ -z "$(find dist -maxdepth 1 -type d ! -name dist 2>/dev/null)" ]; then
+            echo "Build fehlgeschlagen - kein dist-Verzeichnis erzeugt." && exit 1
+          fi
 
       - name: Unnoetige Verzeichnisse bereinigen
         run: |
@@ -475,18 +513,28 @@ jobs:
 
             python3 -m venv .venv
             .venv/bin/pip install --upgrade pip
-            .venv/bin/pip install PySide6 Nuitka
+            .venv/bin/pip install PySide6 "Nuitka==4.1"
 
-            if [ ! -f resources.rcc ]; then
-              echo "Warnung: resources.rcc nicht gefunden, Schritt wird übersprungen"
+            RCC=$(.venv/bin/python3 -c "import PySide6, os; print(os.path.join(os.path.dirname(PySide6.__file__), 'rcc'))")
+            if [ -f "$RCC" ]; then
+              "$RCC" -binary resources.qrc -o resources.rcc
+            elif [ ! -f resources.rcc ]; then
+              echo "resources.rcc nicht gefunden und rcc nicht verfuegbar!" && exit 1
             fi
 
+            rm -rf dist
             .venv/bin/python3 -m pyside6deploy \
-              -c build/pysidedeploy-linux.spec \
+              -c build/pysidedeploy-linux.spec main.py \
+              --extra-modules Multimedia,TextToSpeech --mode standalone \
               --verbose
 
+            # pyside6-deploy kann Exitcode 0 liefern, obwohl der interne Nuitka-Aufruf
+            # fehlgeschlagen ist - daher den tatsaechlichen Build-Output pruefen.
             BIN=$(find dist -maxdepth 1 -type f -perm /111 | head -1)
-            [ -n "$BIN" ] && mv "$BIN" dist/MPDP-linux-aarch64
+            if [ -z "$BIN" ]; then
+              echo "Build fehlgeschlagen - keine ausfuehrbare Datei in dist erzeugt." && exit 1
+            fi
+            mv "$BIN" dist/MPDP-linux-aarch64
 
       - name: Artifact hochladen
         uses: actions/upload-artifact@v4

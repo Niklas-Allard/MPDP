@@ -26,7 +26,7 @@ modules = Core,Gui,Qml,Quick,QuickControls2,Multimedia,TextToSpeech,Concurrent,N
 
 # macOS-spezifische Plugins
 # xcb/wayland werden nicht benötigt (macOS verwendet cocoa)
-plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls
+plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls,texttospeech
 
 [android]
 

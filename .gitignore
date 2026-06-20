@@ -83,3 +83,4 @@ CMakeLists.txt.user*
 /dist
 /images/
 /deployment/
+/pysidedeploy_console_tmp.spec

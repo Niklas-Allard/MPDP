@@ -14,8 +14,8 @@ android_packages = buildozer==1.5.0,cython==0.29.33
 [qt]
 qml_files = main.qml,StartPage/main.qml,FileBrowser/main.qml,MultiMediaPlayer/main.qml,Settings/main.qml
 excluded_qml_plugins = QtCharts,QtSensors,QtWebEngine,QtWebView,Qt3D,QtLocation,QtQuick3D,QtDataVisualization
-modules = Core,Gui,Qml,Quick,QuickControls2
-plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls
+modules = Core,Gui,Multimedia,Qml,Quick,QuickControls2,TextToSpeech
+plugins = accessiblebridge,generic,iconengines,imageformats,multimedia,platforminputcontexts,platforms,platformthemes,qmllint,qmltooling,scenegraph,tls,texttospeech
 
 [android]
 wheel_pyside = 

@@ -29,8 +29,6 @@ ApplicationWindow {
     palette.mid: settingsManager.colorCardBorder
     palette.placeholderText: settingsManager.colorText
 
-    Image { source: "qrc:/icons/arrow_forward.png"; width: 32; height: 32 }
-
     // ---- Bildschirmschoner --------------------------------------------------
 
     Timer {
