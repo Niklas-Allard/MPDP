@@ -22,6 +22,20 @@ ScrollView {
 
     property var entries: []
 
+    // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
+    // hier werden die Stimmen aller installierten Sprachen eingesammelt.
+    function getAllVoices() {
+        var savedLocale = ttsProbe.locale
+        var locales = ttsProbe.availableLocales()
+        var all = []
+        for (var i = 0; i < locales.length; i++) {
+            ttsProbe.locale = locales[i]
+            all = all.concat(ttsProbe.availableVoices())
+        }
+        ttsProbe.locale = savedLocale
+        return all
+    }
+
     function loadEntries() {
         try {
             root.entries = JSON.parse(settingsManager.wordPronunciations || "[]")
@@ -98,8 +112,13 @@ ScrollView {
                         property var localeList: []
 
                         function refresh() {
-                            var voices = ttsProbe.availableVoices()
+                            var voices = root.getAllVoices()
                             if (voices.length === 0) return
+
+                            // Aktuell gewählte Sprache merken, damit ein erneuter refresh()
+                            // (z. B. nach dem Probehören) die Auswahl nicht zurücksetzt.
+                            var prevLocaleName = (localeList.length > 0 && currentIndex >= 0 &&
+                                    currentIndex < localeList.length) ? localeList[currentIndex].name : ""
 
                             var seen = {}
                             var locales = []
@@ -120,22 +139,29 @@ ScrollView {
                                     display += " (" + l.nativeTerritoryName + ")"
                                 names.push(display)
                             }
-                            var prev = currentIndex
                             model = names
 
-                            // Vorauswahl: erste Sprache, die nicht der Standardsprache entspricht
-                            var defVoice = settingsManager.ttsVoice
-                            var defLocale = ""
-                            var allVoices = ttsProbe.availableVoices()
-                            for (var v = 0; v < allVoices.length; v++) {
-                                if (allVoices[v].name === defVoice) {
-                                    defLocale = allVoices[v].locale.name
-                                    break
-                                }
+                            var restoredIndex = -1
+                            for (var ri = 0; ri < locales.length; ri++) {
+                                if (locales[ri].name === prevLocaleName) { restoredIndex = ri; break }
                             }
-                            currentIndex = 0
-                            for (var li = 0; li < locales.length; li++) {
-                                if (locales[li].name !== defLocale) { currentIndex = li; break }
+
+                            if (restoredIndex >= 0) {
+                                currentIndex = restoredIndex
+                            } else {
+                                // Vorauswahl: erste Sprache, die nicht der Standardsprache entspricht
+                                var defVoice = settingsManager.ttsVoice
+                                var defLocale = ""
+                                for (var v = 0; v < voices.length; v++) {
+                                    if (voices[v].name === defVoice) {
+                                        defLocale = voices[v].locale.name
+                                        break
+                                    }
+                                }
+                                currentIndex = 0
+                                for (var li = 0; li < locales.length; li++) {
+                                    if (locales[li].name !== defLocale) { currentIndex = li; break }
+                                }
                             }
                             altVoiceCombo.refresh()
                         }
@@ -159,7 +185,12 @@ ScrollView {
                             var selectedLocale = altLangCombo.localeList[altLangCombo.currentIndex]
                             if (!selectedLocale) return
 
-                            var voices = ttsProbe.availableVoices()
+                            // Aktuell gewählte Stimme merken, damit ein erneuter refresh()
+                            // (z. B. nach dem Probehören) die Auswahl nicht zurücksetzt.
+                            var prevVoiceName = (currentIndex >= 0 && currentIndex < voiceList.length)
+                                    ? voiceList[currentIndex].name : ""
+
+                            var voices = root.getAllVoices()
                             var filtered = []
                             for (var i = 0; i < voices.length; i++) {
                                 if (voices[i].locale.name === selectedLocale.name)
@@ -170,7 +201,9 @@ ScrollView {
                             var names = []
                             for (var j = 0; j < filtered.length; j++) names.push(filtered[j].name)
                             model = names
-                            currentIndex = 0
+
+                            var idx = names.indexOf(prevVoiceName)
+                            currentIndex = idx >= 0 ? idx : 0
                         }
                     }
                 }
@@ -241,7 +274,7 @@ ScrollView {
                         Button {
                             text: "Test"
                             onClicked: {
-                                var voices = ttsProbe.availableVoices()
+                                var voices = root.getAllVoices()
                                 for (var i = 0; i < voices.length; i++) {
                                     if (voices[i].name === modelData.voice) {
                                         ttsProbe.voice = voices[i]

@@ -26,6 +26,20 @@ ScrollView {
 
     property var _ttsQueue: []
 
+    // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
+    // hier werden die Stimmen aller installierten Sprachen eingesammelt.
+    function getAllVoices() {
+        var savedLocale = ttsProbe.locale
+        var locales = ttsProbe.availableLocales()
+        var all = []
+        for (var i = 0; i < locales.length; i++) {
+            ttsProbe.locale = locales[i]
+            all = all.concat(ttsProbe.availableVoices())
+        }
+        ttsProbe.locale = savedLocale
+        return all
+    }
+
     Timer {
         id: ttsPauseTimer
         interval: settingsManager.ttsDashPauseDuration
@@ -76,7 +90,7 @@ ScrollView {
                 property var localeList: []
 
                 function refresh() {
-                    var voices = ttsProbe.availableVoices()
+                    var voices = root.getAllVoices()
                     if (voices.length === 0) return
 
                     // Eindeutige Locales aus den verfügbaren Stimmen ableiten
@@ -138,7 +152,7 @@ ScrollView {
                     var selectedLocale = langCombo.localeList[langCombo.currentIndex]
                     if (!selectedLocale) return
 
-                    var voices = ttsProbe.availableVoices()
+                    var voices = root.getAllVoices()
                     var filtered = []
                     for (var i = 0; i < voices.length; i++) {
                         if (voices[i].locale.name === selectedLocale.name)

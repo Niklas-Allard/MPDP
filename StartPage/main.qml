@@ -39,10 +39,24 @@ Item {
         onTriggered: startPage.speakNextFromQueue()
     }
 
+    // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
+    // hier werden die Stimmen aller installierten Sprachen eingesammelt.
+    function getAllVoices() {
+        var savedLocale = tts.locale
+        var locales = tts.availableLocales()
+        var all = []
+        for (var i = 0; i < locales.length; i++) {
+            tts.locale = locales[i]
+            all = all.concat(tts.availableVoices())
+        }
+        tts.locale = savedLocale
+        return all
+    }
+
     // Übernimmt die in den Einstellungen gewählte Stimme (auch bei späterer Änderung)
     function applyTtsVoice() {
         if (settingsManager.ttsVoice) {
-            var voices = tts.availableVoices()
+            var voices = startPage.getAllVoices()
             for (var i = 0; i < voices.length; i++) {
                 if (voices[i].name === settingsManager.ttsVoice) {
                     tts.voice = voices[i]
@@ -53,7 +67,7 @@ Item {
     }
 
     function applyVoiceByName(voiceName) {
-        var voices = tts.availableVoices()
+        var voices = startPage.getAllVoices()
         for (var i = 0; i < voices.length; i++) {
             if (voices[i].name === voiceName) {
                 tts.voice = voices[i]
