@@ -8,6 +8,7 @@ class NavigationMixin:
     showHiddenFilesChanged = Signal()
     sortOrderChanged = Signal()
     hideDisabledNavButtonsChanged = Signal()
+    hideShuffleButtonChanged = Signal()
 
     @Property(str, notify=speakTriggerChanged)
     def speakTrigger(self):
@@ -56,3 +57,11 @@ class NavigationMixin:
     @hideDisabledNavButtons.setter
     def hideDisabledNavButtons(self, value):
         self._set("hideDisabledNavButtons", bool(value), self.hideDisabledNavButtonsChanged)
+
+    @Property(bool, notify=hideShuffleButtonChanged)
+    def hideShuffleButton(self):
+        return self._get("hideShuffleButton", bool)
+
+    @hideShuffleButton.setter
+    def hideShuffleButton(self, value):
+        self._set("hideShuffleButton", bool(value), self.hideShuffleButtonChanged)

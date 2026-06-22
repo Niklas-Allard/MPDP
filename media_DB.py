@@ -1,5 +1,6 @@
 from PySide6.QtCore import QObject, Slot, Signal
 import sqlite3
+import random
 from pathlib import Path
 
 class Media_DB(QObject):
@@ -34,6 +35,14 @@ class Media_DB(QObject):
                 media_path TEXT NOT NULL UNIQUE,
                 corresponding_media TEXT NOT NULL,
                 created_at TEXT DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS shuffle_watched (
+                id INTEGER PRIMARY KEY,
+                folder_path TEXT NOT NULL,
+                media_path TEXT NOT NULL,
+                watched_at TEXT DEFAULT (datetime('now')),
+                UNIQUE(folder_path, media_path)
             );
             """)
 
@@ -93,6 +102,43 @@ class Media_DB(QObject):
             )
             row = cur.fetchone()
             return row[0] if row else ""
+
+    @Slot(str, "QVariantList", result=str)
+    def get_random_unwatched(self, folder_path: str, candidates: list) -> str:
+        if not candidates:
+            return ""
+        folder_key = Path(folder_path).as_posix()
+        candidate_set = {Path(c).as_posix() for c in candidates}
+
+        with sqlite3.connect(self._db_path) as con:
+            cur = con.execute(
+                "SELECT media_path FROM shuffle_watched WHERE folder_path = ?",
+                (folder_key,)
+            )
+            watched = {row[0] for row in cur.fetchall()}
+
+            unwatched = candidate_set - watched
+            if not unwatched:
+                # Alle Folgen schon gesehen -> Zyklus zurücksetzen
+                con.execute(
+                    "DELETE FROM shuffle_watched WHERE folder_path = ?",
+                    (folder_key,)
+                )
+                unwatched = candidate_set
+
+        return random.choice(list(unwatched))
+
+    @Slot(str, str)
+    def mark_shuffle_watched(self, folder_path: str, media_path: str):
+        folder_key = Path(folder_path).as_posix()
+        media_key = Path(media_path).as_posix()
+        with sqlite3.connect(self._db_path) as con:
+            con.execute("""
+                INSERT INTO shuffle_watched(folder_path, media_path)
+                VALUES (?, ?)
+                ON CONFLICT(folder_path, media_path) DO UPDATE SET
+                    watched_at = datetime('now')
+            """, (folder_key, media_key))
 
     def part_path_desc(self, path: str) -> list[str]:
         p = Path(path)

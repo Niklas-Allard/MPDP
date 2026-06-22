@@ -9,6 +9,7 @@ from Settings.screensaver import ScreensaverMixin
 from Settings.directories import DirectoriesMixin
 from Settings.regex_rules import RegexRulesMixin
 from Settings.word_pronunciation import WordPronunciationMixin
+from Settings.shuffle import ShuffleMixin
 
 
 class SettingsManager(
@@ -20,6 +21,7 @@ class SettingsManager(
     ScreensaverMixin,
     DirectoriesMixin,
     RegexRulesMixin,
+    ShuffleMixin,
     SettingsBase,
     QObject,
 ):
@@ -42,6 +44,7 @@ class SettingsManager(
             self.clickSpeakDelayChanged,
             self.speakTriggerChanged, self.openTriggerChanged, self.hoverDelayChanged,
             self.showHiddenFilesChanged, self.sortOrderChanged, self.hideDisabledNavButtonsChanged,
+            self.hideShuffleButtonChanged,
             self.defaultVolumeChanged, self.resumePlaybackChanged,
             self.cursorHideTimeoutChanged, self.autoPlayNextChanged,
             self.announceNextFileChanged, self.autoPlayOnOpenChanged,

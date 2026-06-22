@@ -13,10 +13,17 @@ Item {
     property int minCardHeight: settingsManager.cardMinHeight
     property int currentPage: 0
     property string lastPlayedFile: ""
+    property bool shuffleEnabled: false
 
-    Component.onCompleted: root.updateLastPlayed()
+    Component.onCompleted: {
+        root.updateLastPlayed()
+        root.updateShuffleEnabled()
+    }
 
-    onFolderDataChanged: root.updateLastPlayed()
+    onFolderDataChanged: {
+        root.updateLastPlayed()
+        root.updateShuffleEnabled()
+    }
 
     function updateLastPlayed() {
         if (root.folderData && root.folderData.path && typeof media_DB !== "undefined") {
@@ -24,6 +31,46 @@ Item {
         } else {
             root.lastPlayedFile = ""
         }
+    }
+
+    function updateShuffleEnabled() {
+        if (root.folderData && root.folderData.path) {
+            root.shuffleEnabled = settingsManager.is_shuffle_folder(root.folderData.path)
+        } else {
+            root.shuffleEnabled = false
+        }
+    }
+
+    // Wählt eine zufällige, noch nicht gesehene Folge aus dem aktuellen Ordner
+    // (Datenbank merkt sich Gesehenes pro Ordner und setzt den Zyklus zurück, sobald alle gesehen wurden)
+    function playShuffle() {
+        if (!root.folderData || !root.folderData.children) return
+
+        var files = []
+        for (var i = 0; i < root.folderData.children.length; i++) {
+            var child = root.folderData.children[i]
+            if (child.type === "file" && child.path) {
+                files.push(child.path)
+            }
+        }
+        if (files.length === 0) return
+
+        var chosen = media_DB.get_random_unwatched(root.folderData.path, files)
+        if (!chosen) return
+        media_DB.mark_shuffle_watched(root.folderData.path, chosen)
+
+        var playlist = []
+        var startIndex = 0
+        for (var j = 0; j < files.length; j++) {
+            if (files[j] === chosen) startIndex = playlist.length
+            playlist.push("file:///" + files[j].replace(/\\/g, "/"))
+        }
+
+        root.StackView.view.push("../MultiMediaPlayer/main.qml", {
+            "mediaSource": "file:///" + chosen.replace(/\\/g, "/"),
+            "playlist": playlist,
+            "playlistIndex": startIndex
+        })
     }
 
     Component.onDestruction: {
@@ -178,6 +225,7 @@ Item {
         function onTtsVoiceChanged() { root.applyTtsVoice() }
         function onShowHiddenFilesChanged() { root.reloadFolder() }
         function onSortOrderChanged() { root.reloadFolder() }
+        function onShuffle_folders_changed() { root.updateShuffleEnabled() }
     }
 
     Connections {
@@ -428,43 +476,6 @@ Item {
             }
         }
 
-        Button {
-            visible: root.lastPlayedFile !== ""
-            icon.source: "../icons/play.svg"
-            icon.width: 24
-            icon.height: 24
-            ToolTip.text: {
-                var parts = root.lastPlayedFile.replace(/\\/g, "/").split("/")
-                var name = parts[parts.length - 1]
-                var dot = name.lastIndexOf(".")
-                return dot > 0 ? name.substring(0, dot) : name
-            }
-            ToolTip.visible: hovered
-            ToolTip.delay: 400
-            onClicked: {
-                var filePath = root.lastPlayedFile.replace(/\\/g, "/")
-                var urlPath = "file:///" + filePath
-                var siblings = root.folderData && root.folderData.children ? root.folderData.children : []
-                var playlist = []
-                var startIndex = 0
-                for (var i = 0; i < siblings.length; i++) {
-                    if (siblings[i].type === "file" && siblings[i].path) {
-                        if (siblings[i].path.replace(/\\/g, "/") === filePath)
-                            startIndex = playlist.length
-                        playlist.push("file:///" + siblings[i].path.replace(/\\/g, "/"))
-                    }
-                }
-                root.StackView.view.push("../MultiMediaPlayer/main.qml", {
-                    "mediaSource": urlPath,
-                    "playlist": playlist,
-                    "playlistIndex": startIndex
-                })
-            }
-            HoverHandler {
-                cursorShape: Qt.PointingHandCursor
-            }
-        }
-
         // Pagination Buttons
         Button {
             icon.source: "../icons/arrow_left.svg"
@@ -505,6 +516,61 @@ Item {
             // Unsichtbar machen, wenn deaktiviert und Einstellung aktiv – Platz bleibt erhalten
             opacity: (!enabled && settingsManager.hideDisabledNavButtons) ? 0 : 1
             onClicked: root.currentPage++
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
+        }
+
+        Button {
+            visible: root.lastPlayedFile !== ""
+            icon.source: "../icons/play.svg"
+            icon.width: 24
+            icon.height: 24
+            ToolTip.text: {
+                var parts = root.lastPlayedFile.replace(/\\/g, "/").split("/")
+                var name = parts[parts.length - 1]
+                var dot = name.lastIndexOf(".")
+                return dot > 0 ? name.substring(0, dot) : name
+            }
+            ToolTip.visible: hovered
+            ToolTip.delay: 400
+            onClicked: {
+                var filePath = root.lastPlayedFile.replace(/\\/g, "/")
+                var urlPath = "file:///" + filePath
+                var siblings = root.folderData && root.folderData.children ? root.folderData.children : []
+                var playlist = []
+                var startIndex = 0
+                for (var i = 0; i < siblings.length; i++) {
+                    if (siblings[i].type === "file" && siblings[i].path) {
+                        if (siblings[i].path.replace(/\\/g, "/") === filePath)
+                            startIndex = playlist.length
+                        playlist.push("file:///" + siblings[i].path.replace(/\\/g, "/"))
+                    }
+                }
+                root.StackView.view.push("../MultiMediaPlayer/main.qml", {
+                    "mediaSource": urlPath,
+                    "playlist": playlist,
+                    "playlistIndex": startIndex
+                })
+            }
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
+        }
+
+        Button {
+            id: shuffleButton
+            icon.source: "../icons/shuffle.svg"
+            icon.width: 24
+            icon.height: 24
+            enabled: root.shuffleEnabled
+            // "weg" (kein Platzverbrauch) wenn die Einstellung es vorsieht, sonst nur "ausgeblendet" (deaktiviert)
+            visible: root.shuffleEnabled || !settingsManager.hideShuffleButton
+            opacity: enabled ? 1 : 0.4
+            ToolTip.text: "Zufällige Folge abspielen"
+            ToolTip.visible: hovered
+            ToolTip.delay: 400
+            onClicked: root.playShuffle()
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }

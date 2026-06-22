@@ -23,6 +23,7 @@ class SettingsBase:
         "showHiddenFiles": False,
         "sortOrder": "name_asc",
         "hideDisabledNavButtons": False,
+        "hideShuffleButton": False,
         "defaultVolume": 1.0,
         "resumePlayback": True,
         "cursorHideTimeout": 5000,

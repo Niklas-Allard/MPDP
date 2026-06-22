@@ -84,6 +84,15 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
+            Label { text: "Shuffle-Button außerhalb von Serien komplett ausblenden"; Layout.preferredWidth: 220 }
+            Switch {
+                checked: settingsManager.hideShuffleButton
+                onToggled: settingsManager.hideShuffleButton = checked
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
             Label { text: "Sortierung"; Layout.preferredWidth: 220 }
             ComboBox {
                 id: sortCombo

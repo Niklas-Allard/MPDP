@@ -32,6 +32,7 @@ Item {
         TabButton { text: "Verzeichnisse" }
         TabButton { text: "Bildschirmschoner" }
         TabButton { text: "Text-Filter" }
+        TabButton { text: "Shuffle" }
     }
 
     StackLayout {
@@ -52,6 +53,7 @@ Item {
         TabDirectories         {}
         TabScreensaver         {}
         TabTextFilter          {}
+        TabShuffle             {}
     }
 
     RowLayout {
