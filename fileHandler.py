@@ -69,6 +69,21 @@ class fileHandler(QObject):
 
         return dirs + files
 
+    def get_thumbnail_for_dir(self, path_str: str) -> str:
+        if not path_str:
+            return ""
+        path = Path(path_str)
+        global_image_dir = ""
+        if self._settings_manager is not None:
+            global_image_dir = self._settings_manager.get_global_image_directory()
+        if not global_image_dir:
+            return ""
+        for ext in self.SUPPORTED_IMAGE_FORMATS:
+            thumbnail_file = Path(global_image_dir) / f"{path.name}{ext}"
+            if thumbnail_file.exists():
+                return QUrl.fromLocalFile(str(thumbnail_file)).toString()
+        return ""
+
     @Slot(str, result=dict)
     def path_to_dict(self, path) -> dict:
         path = Path(path)

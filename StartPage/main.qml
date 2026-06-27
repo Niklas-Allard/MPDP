@@ -215,6 +215,15 @@ Item {
                 radius: 10
                 color: settingsManager.colorCardDirectory
                 border.color: settingsManager.colorCardBorder
+                clip: true
+
+                Image {
+                    id: bgImage
+                    anchors.fill: parent
+                    source: modelData.thumbnail || ""
+                    fillMode: Image.PreserveAspectCrop
+                    visible: status === Image.Ready
+                }
 
                 MouseArea {
                     id: mouseAreaCard
@@ -292,6 +301,7 @@ Item {
 
                 ColumnLayout {
                     anchors.centerIn: parent
+                    visible: !bgImage.visible
                     Text {
                         text: "📁"
                         font.pixelSize: 40 * settingsManager.fontScale
@@ -306,6 +316,26 @@ Item {
                         elide: Text.ElideRight
                         Layout.maximumWidth: parent.width
                         color: settingsManager.colorCardText
+                    }
+                }
+
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: nameLabel.height + 10
+                    color: "#80000000"
+                    visible: bgImage.visible
+
+                    Text {
+                        id: nameLabel
+                        text: modelData.name
+                        color: "white"
+                        font.bold: true
+                        font.pixelSize: 14 * settingsManager.fontScale
+                        anchors.centerIn: parent
+                        elide: Text.ElideRight
+                        width: parent.width - 10
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }

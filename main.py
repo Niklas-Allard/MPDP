@@ -51,17 +51,19 @@ if __name__ == "__main__":
     media_DB = Media_DB()
     engine.rootContext().setContextProperty("media_DB", media_DB)
 
-    # Hauptverzeichnisse jetzt direkt aus QSettings
-    main_dirs = settings_manager.get_main_directories()
-    engine.rootContext().setContextProperty("mainDirs", main_dirs)
+    def _get_enriched_main_dirs():
+        dirs = settings_manager.get_main_directories()
+        return [{**d, "thumbnail": fileManager.get_thumbnail_for_dir(d.get("path", ""))} for d in dirs]
 
-    # Bei Änderung der Hauptverzeichnisse den Context Property aktualisieren
+    # Hauptverzeichnisse jetzt direkt aus QSettings
+    engine.rootContext().setContextProperty("mainDirs", _get_enriched_main_dirs())
+
+    # Bei Änderung der Hauptverzeichnisse oder des Bildverzeichnisses aktualisieren
     def _refresh_main_dirs():
-        engine.rootContext().setContextProperty(
-            "mainDirs", settings_manager.get_main_directories()
-        )
+        engine.rootContext().setContextProperty("mainDirs", _get_enriched_main_dirs())
 
     settings_manager.main_directories_changed.connect(_refresh_main_dirs)
+    settings_manager.global_image_directory_changed.connect(_refresh_main_dirs)
 
     # QML Datei laden
     qml_file = Path(__file__).resolve().parent / "main.qml"
