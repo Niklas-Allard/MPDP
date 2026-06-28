@@ -18,6 +18,9 @@ class TmdbManager(QObject):
     bulk_finished = Signal(int, int, int)
     bulk_cancelled = Signal()
 
+    # total_folders, folders_with_poster, list of {"name", "parent"} dicts
+    analysis_ready = Signal(int, int, list)
+
     _KEYRING_SERVICE = "MPDP_TMDB"
     _KEYRING_USER = "api_key"
     _SUPPORTED_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.bmp', '.ico']
@@ -293,3 +296,28 @@ class TmdbManager(QObject):
             time.sleep(0.3)
 
         self.bulk_finished.emit(downloaded, skipped, errors)
+
+    # ── Poster-Analyse ───────────────────────────────────────────────────────
+
+    @Slot()
+    def analyze_missing_posters(self):
+        threading.Thread(target=self._do_analyze, daemon=True).start()
+
+    def _do_analyze(self):
+        sm = self._settings_manager
+        if not sm:
+            self.analysis_ready.emit(0, 0, [])
+            return
+
+        image_dir = sm.get_global_image_directory()
+        folders = self._collect_folders()
+
+        missing: list[dict] = []
+        for folder in folders:
+            if not image_dir or not self._poster_exists(image_dir, folder.name):
+                missing.append({
+                    "name":   folder.name,
+                    "parent": folder.parent.name,
+                })
+
+        self.analysis_ready.emit(len(folders), len(folders) - len(missing), missing)

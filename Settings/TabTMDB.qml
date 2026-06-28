@@ -13,6 +13,12 @@ ScrollView {
     property string bulkCurrent: ""
     property string bulkSummary: ""
 
+    property bool   analyzing:     false
+    property int    analysisTotal:  0
+    property int    analysisFound:  0
+    property var    missingList:    []
+    property bool   analysisRun:    false   // wurde Analyse schon einmal ausgeführt?
+
     readonly property var posterSizeKeys: ["w92", "w154", "w185", "w342", "w500", "w780", "original"]
     readonly property var posterSizeLabels: [
         "w92  – sehr klein (~7 KB)",
@@ -55,6 +61,14 @@ ScrollView {
             root.bulkRunning = false
             root.bulkCurrent = ""
             root.bulkSummary = "Abgebrochen."
+        }
+
+        function onAnalysis_ready(total, found, missing) {
+            root.analyzing     = false
+            root.analysisTotal = total
+            root.analysisFound = found
+            root.missingList   = missing
+            root.analysisRun   = true
         }
     }
 
@@ -231,6 +245,148 @@ ScrollView {
                     font.pixelSize: 13 * settingsManager.fontScale
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
+                }
+            }
+        }
+
+        // Poster-Analyse
+        GroupBox {
+            Layout.fillWidth: true
+            title: "Fehlende Poster analysieren"
+
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 10
+
+                Label {
+                    text: "Zeigt an, welche Ordner in den Hauptverzeichnissen noch kein Poster haben."
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                    font.pixelSize: 13 * settingsManager.fontScale
+                    color: settingsManager.colorText
+                }
+
+                RowLayout {
+                    spacing: 8
+
+                    Button {
+                        text: "Analyse starten"
+                        font.pixelSize: 14 * settingsManager.fontScale
+                        enabled: !root.analyzing && !root.bulkRunning
+                        onClicked: {
+                            root.analyzing   = true
+                            root.analysisRun = false
+                            root.missingList = []
+                            tmdbManager.analyze_missing_posters()
+                        }
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    }
+
+                    BusyIndicator {
+                        running: root.analyzing
+                        visible: root.analyzing
+                        width: 24; height: 24
+                    }
+                }
+
+                // Zusammenfassung
+                Label {
+                    visible: root.analysisRun
+                    font.pixelSize: 14 * settingsManager.fontScale
+                    font.bold: true
+                    color: root.missingList.length === 0
+                           ? settingsManager.colorAccent
+                           : settingsManager.colorText
+                    text: {
+                        if (!root.analysisRun) return ""
+                        var miss = root.missingList.length
+                        if (miss === 0)
+                            return "✓  Alle " + root.analysisTotal + " Ordner haben ein Poster."
+                        return miss + " von " + root.analysisTotal +
+                               " Ordnern haben kein Poster."
+                    }
+                    Layout.fillWidth: true
+                }
+
+                // Liste der fehlenden Ordner
+                Rectangle {
+                    visible: root.analysisRun && root.missingList.length > 0
+                    Layout.fillWidth: true
+                    height: Math.min(root.missingList.length, 8) * 32 + 2
+                    color: settingsManager.colorBase
+                    border.color: settingsManager.colorCardBorder
+                    radius: 4
+                    clip: true
+
+                    ListView {
+                        id: missingListView
+                        anchors.fill: parent
+                        model: root.missingList
+                        clip: true
+
+                        ScrollBar.vertical: ScrollBar {}
+
+                        delegate: Rectangle {
+                            width: missingListView.width
+                            height: 32
+                            color: index % 2 === 0
+                                   ? "transparent"
+                                   : Qt.rgba(0, 0, 0, settingsManager.theme === "dark" ? 0.15 : 0.04)
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                spacing: 0
+
+                                Label {
+                                    text: modelData.name
+                                    color: settingsManager.colorText
+                                    font.pixelSize: 13 * settingsManager.fontScale
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+
+                                Label {
+                                    text: modelData.parent
+                                    color: settingsManager.colorText
+                                    opacity: 0.5
+                                    font.pixelSize: 12 * settingsManager.fontScale
+                                    Layout.preferredWidth: 100
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideLeft
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Hinweis + Button zum direkten Herunterladen
+                RowLayout {
+                    visible: root.analysisRun && root.missingList.length > 0
+                    spacing: 12
+
+                    Label {
+                        text: "Direkt alle fehlenden Poster herunterladen:"
+                        color: settingsManager.colorText
+                        font.pixelSize: 13 * settingsManager.fontScale
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Button {
+                        text: root.bulkRunning ? "Läuft…" : "Herunterladen"
+                        font.pixelSize: 13 * settingsManager.fontScale
+                        enabled: !root.bulkRunning && !root.analyzing && tmdbManager.has_api_key()
+                        onClicked: {
+                            root.bulkSummary  = ""
+                            root.bulkProgress = 0.0
+                            root.bulkCurrent  = ""
+                            root.bulkRunning  = true
+                            tmdbManager.start_bulk_download()
+                        }
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    }
                 }
             }
         }
