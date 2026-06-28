@@ -35,6 +35,7 @@ class SettingsBase:
         "screensaverImageDirectory": "",
         "screensaverImageInterval": 5000,
         "wordPronunciations": "[]",
+        "tmdbPosterQuality": "w500",
     }
 
     THEME_PALETTES = {

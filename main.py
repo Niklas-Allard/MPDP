@@ -12,6 +12,7 @@ from media_DB import Media_DB
 from settings_manager import SettingsManager
 from activity_monitor import ActivityMonitor
 from regex_filter import RegexFilter
+from tmdb_manager import TmdbManager
 
 if __name__ == "__main__":
     # Organisation/Anwendungsnamen setzen, damit QSettings konsistent funktioniert
@@ -50,6 +51,10 @@ if __name__ == "__main__":
     # Create an instance that handles database operations
     media_DB = Media_DB()
     engine.rootContext().setContextProperty("media_DB", media_DB)
+
+    # TMDB integration
+    tmdb_manager = TmdbManager(settings_manager=settings_manager)
+    engine.rootContext().setContextProperty("tmdbManager", tmdb_manager)
 
     def _get_enriched_main_dirs():
         dirs = settings_manager.get_main_directories()

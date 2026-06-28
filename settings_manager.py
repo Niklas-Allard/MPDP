@@ -10,9 +10,11 @@ from Settings.directories import DirectoriesMixin
 from Settings.regex_rules import RegexRulesMixin
 from Settings.word_pronunciation import WordPronunciationMixin
 from Settings.shuffle import ShuffleMixin
+from Settings.tmdb import TmdbMixin
 
 
 class SettingsManager(
+    TmdbMixin,
     AppearanceMixin,
     TTSMixin,
     WordPronunciationMixin,
@@ -51,5 +53,6 @@ class SettingsManager(
             self.screensaverEnabledChanged, self.screensaverTimeoutChanged,
             self.screensaverImageDirectoryChanged, self.screensaverImageIntervalChanged,
             self.wordPronunciationsChanged,
+            self.tmdbPosterQualityChanged,
         ]:
             sig.emit()

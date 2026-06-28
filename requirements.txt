@@ -1,2 +1,4 @@
 PySide6
 nuitka
+tmdbv3api
+keyring

@@ -33,6 +33,7 @@ Item {
         TabButton { text: "Bildschirmschoner" }
         TabButton { text: "Text-Filter" }
         TabButton { text: "Shuffle" }
+        TabButton { text: "TMDB" }
     }
 
     StackLayout {
@@ -54,6 +55,7 @@ Item {
         TabScreensaver         {}
         TabTextFilter          {}
         TabShuffle             {}
+        TabTMDB                {}
     }
 
     RowLayout {

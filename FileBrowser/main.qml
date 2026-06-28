@@ -233,6 +233,11 @@ Item {
         function onHistoryChanged() { root.updateLastPlayed() }
     }
 
+    Connections {
+        target: tmdbManager
+        function onDownload_finished(path) { root.reloadFolder() }
+    }
+
     function speakIfEnabled(text) {
         if (!settingsManager.ttsEnabled) return
         text = regexFilter.apply(text)
@@ -574,6 +579,21 @@ Item {
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }
+        }
+
+        Button {
+            text: "Poster"
+            ToolTip.text: "TMDB Poster herunterladen"
+            ToolTip.visible: hovered
+            ToolTip.delay: 400
+            onClicked: {
+                var name = root.folderData ? root.folderData.name : ""
+                root.StackView.view.push("../TMDB/main.qml", {
+                    "searchQuery":    name,
+                    "targetFilename": name
+                })
+            }
+            HoverHandler { cursorShape: Qt.PointingHandCursor }
         }
     }
 }
