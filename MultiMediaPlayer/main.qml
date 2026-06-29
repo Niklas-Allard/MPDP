@@ -8,7 +8,15 @@ Item {
     id: multiMediaPlayerPage
 
     property string mediaSource: ""
+    property string posterSource: ""
     property bool isPlaying: mediaplayer.playbackState === MediaPlayer.PlayingState
+    property bool isAudio: {
+        var lower = multiMediaPlayerPage.mediaSource.toLowerCase()
+        return lower.endsWith(".mp3") || lower.endsWith(".m4a") || lower.endsWith(".aac") ||
+               lower.endsWith(".flac") || lower.endsWith(".ogg") || lower.endsWith(".wav") ||
+               lower.endsWith(".wma") || lower.endsWith(".opus") || lower.endsWith(".aiff") ||
+               lower.endsWith(".ape")
+    }
     // Playlist der Dateien im selben Ordner + Position darin (für autoPlayNext)
     property var playlist: []
     property int playlistIndex: -1
@@ -16,6 +24,13 @@ Item {
     property int cursorHideTimeout: settingsManager ? settingsManager.cursorHideTimeout : 5000
     // true, solange wir auf das Ende der TTS-Ansage warten, um dann das Video zu starten
     property bool pendingPlay: false
+
+    onMediaSourceChanged: {
+        var path = multiMediaPlayerPage.mediaSource.replace("file:///", "")
+        if (path && typeof fileManager !== "undefined") {
+            multiMediaPlayerPage.posterSource = fileManager.get_file_thumbnail(path)
+        }
+    }
 
     Component.onCompleted: {
         if (typeof media_DB !== "undefined") {
@@ -263,6 +278,32 @@ Item {
     VideoOutput {
         id: videoOutput
         anchors.fill: parent
+        visible: !multiMediaPlayerPage.isAudio
+    }
+
+    Rectangle {
+        id: audioPosterArea
+        anchors.fill: parent
+        color: "#111111"
+        visible: multiMediaPlayerPage.isAudio
+
+        Image {
+            id: audioPosterImage
+            anchors.centerIn: parent
+            source: multiMediaPlayerPage.posterSource
+            fillMode: Image.PreserveAspectFit
+            width: Math.min(parent.width * 0.75, parent.height * 0.75)
+            height: width
+            visible: status === Image.Ready && source !== ""
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: "♪"
+            font.pixelSize: 120
+            color: "#444444"
+            visible: !audioPosterImage.visible
+        }
     }
 
     MouseArea {
@@ -313,7 +354,7 @@ Item {
         color: "#D8000000"
         radius: 10
         height: 60
-        visible: mediaplayer.playbackState !== MediaPlayer.PlayingState
+        visible: mediaplayer.playbackState !== MediaPlayer.PlayingState || multiMediaPlayerPage.isAudio
 
         anchors.bottom: parent.bottom
         anchors.left: parent.left

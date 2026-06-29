@@ -69,6 +69,52 @@ class fileHandler(QObject):
 
         return dirs + files
 
+    def _find_thumbnail_for_file(self, path: Path, global_image_dir: str) -> str:
+        stop_paths: set = set()
+        if self._settings_manager is not None:
+            for d in self._settings_manager.get_main_directories():
+                p = d.get("path", "")
+                if p:
+                    try:
+                        stop_paths.add(Path(p).resolve())
+                    except Exception:
+                        pass
+
+        for ext in self.SUPPORTED_IMAGE_FORMATS:
+            candidate = Path(global_image_dir) / f"{path.stem}{ext}"
+            if candidate.exists():
+                return QUrl.fromLocalFile(str(candidate)).toString()
+
+        current = path.parent
+        while True:
+            try:
+                if current.resolve() in stop_paths:
+                    break
+            except Exception:
+                pass
+            for ext in self.SUPPORTED_IMAGE_FORMATS:
+                candidate = Path(global_image_dir) / f"{current.name}{ext}"
+                if candidate.exists():
+                    return QUrl.fromLocalFile(str(candidate)).toString()
+            parent = current.parent
+            if parent == current:
+                break
+            current = parent
+
+        return ""
+
+    @Slot(str, result=str)
+    def get_file_thumbnail(self, path_str: str) -> str:
+        if not path_str:
+            return ""
+        path = Path(path_str)
+        global_image_dir = ""
+        if self._settings_manager is not None:
+            global_image_dir = self._settings_manager.get_global_image_directory()
+        if not global_image_dir:
+            return ""
+        return self._find_thumbnail_for_file(path, global_image_dir)
+
     def get_thumbnail_for_dir(self, path_str: str) -> str:
         if not path_str:
             return ""
@@ -101,19 +147,7 @@ class fileHandler(QObject):
                         thumbnail_path = QUrl.fromLocalFile(str(thumbnail_file)).toString()
                         break
             else:
-                for ext in self.SUPPORTED_IMAGE_FORMATS:
-                    thumbnail_file = Path(global_image_dir) / f"{path.stem}{ext}"
-                    if thumbnail_file.exists():
-                        thumbnail_path = QUrl.fromLocalFile(str(thumbnail_file)).toString()
-                        break
-
-                if not thumbnail_path:
-                    parent_folder_name = path.parent.name
-                    for ext in self.SUPPORTED_IMAGE_FORMATS:
-                        parent_thumbnail_file = Path(global_image_dir) / f"{parent_folder_name}{ext}"
-                        if parent_thumbnail_file.exists():
-                            thumbnail_path = QUrl.fromLocalFile(str(parent_thumbnail_file)).toString()
-                            break
+                thumbnail_path = self._find_thumbnail_for_file(path, global_image_dir)
 
         d = {
             'name': path.stem,
