@@ -581,19 +581,5 @@ Item {
             }
         }
 
-        Button {
-            text: "Poster"
-            ToolTip.text: "TMDB Poster herunterladen"
-            ToolTip.visible: hovered
-            ToolTip.delay: 400
-            onClicked: {
-                var name = root.folderData ? root.folderData.name : ""
-                root.StackView.view.push("../TMDB/main.qml", {
-                    "searchQuery":    name,
-                    "targetFilename": name
-                })
-            }
-            HoverHandler { cursorShape: Qt.PointingHandCursor }
-        }
     }
 }
