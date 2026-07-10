@@ -21,6 +21,29 @@ ScrollView {
     }
 
     property var entries: []
+    property var displayEntries: []
+    property string filterText: ""
+    property int sortMode: 0 // 0 = Wort A-Z, 1 = Wort Z-A, 2 = Stimme A-Z
+
+    function updateDisplayEntries() {
+        var list = root.entries.slice()
+        var f = root.filterText.trim().toLowerCase()
+        if (f.length > 0) {
+            list = list.filter(function(e) {
+                return e.word.toLowerCase().indexOf(f) !== -1 ||
+                       e.voice.toLowerCase().indexOf(f) !== -1
+            })
+        }
+        list.sort(function(a, b) {
+            if (root.sortMode === 1) return b.word.localeCompare(a.word)
+            if (root.sortMode === 2) return a.voice.localeCompare(b.voice)
+            return a.word.localeCompare(b.word)
+        })
+        root.displayEntries = list
+    }
+
+    onFilterTextChanged: updateDisplayEntries()
+    onSortModeChanged: updateDisplayEntries()
 
     // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
     // hier werden die Stimmen aller installierten Sprachen eingesammelt.
@@ -42,6 +65,7 @@ ScrollView {
         } catch (e) {
             root.entries = []
         }
+        root.updateDisplayEntries()
     }
 
     Component.onCompleted: {
@@ -290,8 +314,36 @@ ScrollView {
                 anchors.fill: parent
                 spacing: 4
 
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    TextField {
+                        id: filterField
+                        Layout.fillWidth: true
+                        placeholderText: "Filtern nach Wort oder Stimme …"
+                        text: root.filterText
+                        onTextChanged: root.filterText = text
+                    }
+
+                    Label { text: "Sortieren:" }
+                    ComboBox {
+                        id: sortCombo
+                        Layout.preferredWidth: 160
+                        model: ["Wort (A-Z)", "Wort (Z-A)", "Stimme (A-Z)"]
+                        currentIndex: root.sortMode
+                        onActivated: root.sortMode = currentIndex
+                    }
+                }
+
+                Label {
+                    text: "Keine Treffer für den Filter."
+                    visible: root.entries.length > 0 && root.displayEntries.length === 0
+                    opacity: 0.6
+                }
+
                 Repeater {
-                    model: root.entries
+                    model: root.displayEntries
 
                     delegate: RowLayout {
                         Layout.fillWidth: true
