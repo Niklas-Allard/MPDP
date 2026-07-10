@@ -86,14 +86,18 @@ ScrollView {
                 spacing: 10
 
                 Label {
+                    id: ttHost1
+                    HoverHandler { id: ttHost1Hover }
                     text: "Kostenlosen API-Key auf themoviedb.org/settings/api erstellen."
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                     font.pixelSize: 13 * settingsManager.fontScale
                     color: settingsManager.colorText
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 500
-                    ToolTip.text: "TMDB (The Movie Database) ist eine kostenlose Filmdatenbank.\nMit einem API-Key können automatisch Poster/Cover für Serien und Filme\nheruntergeladen werden. Die Registrierung ist kostenlos."
+                    ToolTip {
+                        visible: ttHost1Hover.hovered
+                        delay: 500
+                        text: "TMDB (The Movie Database) ist eine kostenlose Filmdatenbank.\nMit einem API-Key können automatisch Poster/Cover für Serien und Filme\nheruntergeladen werden. Die Registrierung ist kostenlos."
+                    }
                 }
 
                 RowLayout {
@@ -164,14 +168,18 @@ ScrollView {
                 spacing: 10
 
                 Label {
+                    id: ttHost2
+                    HoverHandler { id: ttHost2Hover }
                     text: "Qualität der heruntergeladenen Poster. Höhere Qualität = größere Dateigröße."
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
                     font.pixelSize: 13 * settingsManager.fontScale
                     color: settingsManager.colorText
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 500
-                    ToolTip.text: "Bestimmt die Auflösung der heruntergeladenen Poster-Bilder.\nEmpfohlen: w500 (~90 KB) – gutes Verhältnis aus Qualität und Dateigröße.\nw342 reicht für kleine Kacheln, 'original' nur bei sehr großen Bildschirmen nötig."
+                    ToolTip {
+                        visible: ttHost2Hover.hovered
+                        delay: 500
+                        text: "Bestimmt die Auflösung der heruntergeladenen Poster-Bilder.\nEmpfohlen: w500 (~90 KB) – gutes Verhältnis aus Qualität und Dateigröße.\nw342 reicht für kleine Kacheln, 'original' nur bei sehr großen Bildschirmen nötig."
+                    }
                 }
 
                 ComboBox {
@@ -182,9 +190,11 @@ ScrollView {
                     onActivated: {
                         settingsManager.tmdbPosterQuality = root.posterSizeKeys[currentIndex]
                     }
-                    ToolTip.visible: hovered
-                    ToolTip.delay: 500
-                    ToolTip.text: "Auflösung der Poster:\n• w92–w185: klein, schnell, wenig Speicher\n• w342: mittel, für normale Kachelgrößen empfohlen\n• w500: hoch, Standardempfehlung\n• w780/original: sehr hoch, für große Displays"
+                    ToolTip {
+                        visible: qualityCombo.hovered
+                        delay: 500
+                        text: "Auflösung der Poster:\n• w92–w185: klein, schnell, wenig Speicher\n• w342: mittel, für normale Kachelgrößen empfohlen\n• w500: hoch, Standardempfehlung\n• w780/original: sehr hoch, für große Displays"
+                    }
                 }
             }
         }
@@ -209,13 +219,14 @@ ScrollView {
                 }
 
                 Button {
+                    id: bulkDownloadButton
                     text: root.bulkRunning ? "Abbrechen" : "Alle Poster herunterladen"
                     font.pixelSize: 14 * settingsManager.fontScale
                     enabled: tmdbManager.has_api_key()
-                    ToolTip.text: tmdbManager.has_api_key()
-                        ? ""
-                        : "Bitte zuerst einen API-Key eingeben."
-                    ToolTip.visible: !tmdbManager.has_api_key() && hovered
+                    ToolTip {
+                        visible: !tmdbManager.has_api_key() && bulkDownloadButton.hovered
+                        text: "Bitte zuerst einen API-Key eingeben."
+                    }
                     onClicked: {
                         if (root.bulkRunning) {
                             tmdbManager.cancel_bulk_download()

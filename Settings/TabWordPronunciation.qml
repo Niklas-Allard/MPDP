@@ -94,11 +94,15 @@ ScrollView {
                 RowLayout {
                     Layout.fillWidth: true
                     Label {
+                        id: ttHost1
+                        HoverHandler { id: ttHost1Hover }
                         text: "Wort"
                         Layout.preferredWidth: 120
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Das Wort, das beim Vorlesen in einer anderen Stimme gesprochen werden soll.\nNur exakte Wortübereinstimmung (Groß-/Kleinschreibung egal)."
+                        ToolTip {
+                            visible: ttHost1Hover.hovered
+                            delay: 500
+                            text: "Das Wort, das beim Vorlesen in einer anderen Stimme gesprochen werden soll.\nNur exakte Wortübereinstimmung (Groß-/Kleinschreibung egal)."
+                        }
                     }
                     TextField {
                         id: wordField
@@ -217,6 +221,7 @@ ScrollView {
                 RowLayout {
                     Layout.fillWidth: true
                     Button {
+                        id: ttHost2
                         text: "Hinzufügen"
                         enabled: wordField.text.trim().length > 0 && altVoiceCombo.count > 0
                         onClicked: {
@@ -224,12 +229,15 @@ ScrollView {
                                 wordField.text.trim(), altVoiceCombo.currentText)
                             wordField.text = ""
                         }
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Fügt das eingegebene Wort mit der gewählten Stimme zur Liste hinzu.\nBeim Vorlesen wird dieses Wort künftig mit der alternativen Stimme gesprochen."
+                        ToolTip {
+                            visible: ttHost2.hovered
+                            delay: 500
+                            text: "Fügt das eingegebene Wort mit der gewählten Stimme zur Liste hinzu.\nBeim Vorlesen wird dieses Wort künftig mit der alternativen Stimme gesprochen."
+                        }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
                     Button {
+                        id: ttHost3
                         text: "Probehören"
                         enabled: wordField.text.trim().length > 0 && altVoiceCombo.count > 0
                         onClicked: {
@@ -239,25 +247,33 @@ ScrollView {
                             }
                             ttsProbe.say(wordField.text.trim())
                         }
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Spricht das eingegebene Wort mit der gewählten Stimme vor,\nohne es zur Liste hinzuzufügen. Zum Testen vor dem Speichern."
+                        ToolTip {
+                            visible: ttHost3.hovered
+                            delay: 500
+                            text: "Spricht das eingegebene Wort mit der gewählten Stimme vor,\nohne es zur Liste hinzuzufügen. Zum Testen vor dem Speichern."
+                        }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
                     Button {
+                        id: ttHost4
                         text: "Stimmen aktualisieren"
                         onClicked: altLangCombo.refresh()
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Lädt die Liste verfügbarer Stimmen neu.\nNützlich nach dem Installieren neuer Windows-Sprachpakete."
+                        ToolTip {
+                            visible: ttHost4.hovered
+                            delay: 500
+                            text: "Lädt die Liste verfügbarer Stimmen neu.\nNützlich nach dem Installieren neuer Windows-Sprachpakete."
+                        }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
                     Button {
+                        id: ttHost5
                         text: "Weitere Stimmen installieren …"
                         onClicked: Qt.openUrlExternally("ms-settings:speech")
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Öffnet die Windows-Spracheinstellungen zum Installieren\nweiterer Sprachpakete und Stimmen."
+                        ToolTip {
+                            visible: ttHost5.hovered
+                            delay: 500
+                            text: "Öffnet die Windows-Spracheinstellungen zum Installieren\nweiterer Sprachpakete und Stimmen."
+                        }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
                 }

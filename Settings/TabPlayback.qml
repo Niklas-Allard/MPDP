@@ -13,11 +13,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost1
+                HoverHandler { id: ttHost1Hover }
                 text: "Standardlautstärke"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Lautstärke beim Öffnen einer Mediendatei.\n0 % = stumm · 100 % = volle Systemlautstärke.\nDie Lautstärke kann jederzeit im Player angepasst werden."
+                ToolTip {
+                    visible: ttHost1Hover.hovered
+                    delay: 500
+                    text: "Lautstärke beim Öffnen einer Mediendatei.\n0 % = stumm · 100 % = volle Systemlautstärke.\nDie Lautstärke kann jederzeit im Player angepasst werden."
+                }
             }
             Slider {
                 id: defVolSlider
@@ -32,11 +36,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost2
+                HoverHandler { id: ttHost2Hover }
                 text: "Wiedergabe fortsetzen"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Setzt ein Video automatisch an der zuletzt gestoppten Stelle fort,\nanstatt von vorne zu beginnen.\nDie gespeicherte Position wird in der Datenbank gespeichert."
+                ToolTip {
+                    visible: ttHost2Hover.hovered
+                    delay: 500
+                    text: "Setzt ein Video automatisch an der zuletzt gestoppten Stelle fort,\nanstatt von vorne zu beginnen.\nDie gespeicherte Position wird in der Datenbank gespeichert."
+                }
             }
             Switch {
                 checked: settingsManager.resumePlayback
@@ -47,11 +55,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost3
+                HoverHandler { id: ttHost3Hover }
                 text: "Cursor ausblenden nach"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Zeit ohne Mausbewegung im Player, nach der der Mauszeiger\nautomatisch ausgeblendet wird.\nBei der nächsten Mausbewegung erscheint er wieder."
+                ToolTip {
+                    visible: ttHost3Hover.hovered
+                    delay: 500
+                    text: "Zeit ohne Mausbewegung im Player, nach der der Mauszeiger\nautomatisch ausgeblendet wird.\nBei der nächsten Mausbewegung erscheint er wieder."
+                }
             }
             Slider {
                 id: cursorSlider
@@ -66,11 +78,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost4
+                HoverHandler { id: ttHost4Hover }
                 text: "Video sofort abspielen"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Startet die Wiedergabe automatisch, sobald eine Mediendatei geöffnet wird.\nWenn deaktiviert, muss die Wiedergabe manuell über den Play-Button gestartet werden."
+                ToolTip {
+                    visible: ttHost4Hover.hovered
+                    delay: 500
+                    text: "Startet die Wiedergabe automatisch, sobald eine Mediendatei geöffnet wird.\nWenn deaktiviert, muss die Wiedergabe manuell über den Play-Button gestartet werden."
+                }
             }
             Switch {
                 checked: settingsManager.autoPlayOnOpen
@@ -81,11 +97,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost5
+                HoverHandler { id: ttHost5Hover }
                 text: "Nächste Datei automatisch"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Spielt nach dem Ende einer Datei automatisch die nächste Datei\nim selben Ordner ab (Playlist-Modus).\nDie Reihenfolge richtet sich nach der gewählten Sortierung."
+                ToolTip {
+                    visible: ttHost5Hover.hovered
+                    delay: 500
+                    text: "Spielt nach dem Ende einer Datei automatisch die nächste Datei\nim selben Ordner ab (Playlist-Modus).\nDie Reihenfolge richtet sich nach der gewählten Sortierung."
+                }
             }
             Switch {
                 checked: settingsManager.autoPlayNext
@@ -96,11 +116,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost6
+                HoverHandler { id: ttHost6Hover }
                 text: "Nächste Folge ansagen"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Liest den Dateinamen der nächsten Datei vor, bevor sie automatisch startet.\nNur verfügbar wenn 'Nächste Datei automatisch' UND die Sprachausgabe aktiv sind."
+                ToolTip {
+                    visible: ttHost6Hover.hovered
+                    delay: 500
+                    text: "Liest den Dateinamen der nächsten Datei vor, bevor sie automatisch startet.\nNur verfügbar wenn 'Nächste Datei automatisch' UND die Sprachausgabe aktiv sind."
+                }
             }
             Switch {
                 enabled: settingsManager.autoPlayNext && settingsManager.ttsEnabled

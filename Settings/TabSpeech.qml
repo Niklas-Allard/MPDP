@@ -72,11 +72,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost1
+                HoverHandler { id: ttHost1Hover }
                 text: "Sprachausgabe aktiv"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Aktiviert oder deaktiviert das automatische Vorlesen\nvon Datei- und Ordnernamen beim Navigieren im Dateibrowser.\nAlle anderen Sprachausgabe-Einstellungen sind nur wirksam wenn diese Option aktiv ist."
+                ToolTip {
+                    visible: ttHost1Hover.hovered
+                    delay: 500
+                    text: "Aktiviert oder deaktiviert das automatische Vorlesen\nvon Datei- und Ordnernamen beim Navigieren im Dateibrowser.\nAlle anderen Sprachausgabe-Einstellungen sind nur wirksam wenn diese Option aktiv ist."
+                }
             }
             Switch {
                 checked: settingsManager.ttsEnabled
@@ -88,11 +92,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost2
+                HoverHandler { id: ttHost2Hover }
                 text: "Sprache"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Sprache der Sprachausgabe.\nEs werden nur Windows-Sprachpakete angezeigt, die auf diesem Gerät installiert sind.\nWeitere Sprachen können über 'Weitere Stimmen installieren' hinzugefügt werden."
+                ToolTip {
+                    visible: ttHost2Hover.hovered
+                    delay: 500
+                    text: "Sprache der Sprachausgabe.\nEs werden nur Windows-Sprachpakete angezeigt, die auf diesem Gerät installiert sind.\nWeitere Sprachen können über 'Weitere Stimmen installieren' hinzugefügt werden."
+                }
             }
             ComboBox {
                 id: langCombo
@@ -152,11 +160,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost3
+                HoverHandler { id: ttHost3Hover }
                 text: "Stimme"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Sprechstimme innerhalb der gewählten Sprache.\nVerschiedene Stimmen klingen unterschiedlich natürlich – einfach ausprobieren.\nNach der Auswahl kann 'Probehören' zum Vergleich genutzt werden."
+                ToolTip {
+                    visible: ttHost3Hover.hovered
+                    delay: 500
+                    text: "Sprechstimme innerhalb der gewählten Sprache.\nVerschiedene Stimmen klingen unterschiedlich natürlich – einfach ausprobieren.\nNach der Auswahl kann 'Probehören' zum Vergleich genutzt werden."
+                }
             }
             ComboBox {
                 id: voiceCombo
@@ -198,11 +210,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost4
+                HoverHandler { id: ttHost4Hover }
                 text: "Geschwindigkeit"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Sprechgeschwindigkeit der Stimme.\n0,0 = normale Geschwindigkeit\nNegative Werte = langsamer (bis −1,0 = sehr langsam)\nPositive Werte = schneller (bis +1,0 = sehr schnell)\nEmpfehlung für leichteres Verstehen: −0,2 bis −0,4."
+                ToolTip {
+                    visible: ttHost4Hover.hovered
+                    delay: 500
+                    text: "Sprechgeschwindigkeit der Stimme.\n0,0 = normale Geschwindigkeit\nNegative Werte = langsamer (bis −1,0 = sehr langsam)\nPositive Werte = schneller (bis +1,0 = sehr schnell)\nEmpfehlung für leichteres Verstehen: −0,2 bis −0,4."
+                }
             }
             Slider {
                 id: rateSlider
@@ -218,11 +234,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost5
+                HoverHandler { id: ttHost5Hover }
                 text: "Lautstärke"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Lautstärke der Sprachausgabe, unabhängig von der Medienwiedergabe.\n0 % = stumm · 100 % = maximale Lautstärke.\nDiese Einstellung beeinflusst nur das Vorlesen, nicht das abgespielte Video."
+                ToolTip {
+                    visible: ttHost5Hover.hovered
+                    delay: 500
+                    text: "Lautstärke der Sprachausgabe, unabhängig von der Medienwiedergabe.\n0 % = stumm · 100 % = maximale Lautstärke.\nDiese Einstellung beeinflusst nur das Vorlesen, nicht das abgespielte Video."
+                }
             }
             Slider {
                 id: ttsVolSlider
@@ -238,11 +258,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost6
+                HoverHandler { id: ttHost6Hover }
                 text: "Pause bei \" - \""
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Macht beim Vorlesen eine kurze Pause, wenn ein ' - ' im Namen vorkommt.\nBeispiel: 'Staffel 1 - Folge 3' wird mit Pause zwischen den Teilen gesprochen.\nVerbessert die Verständlichkeit bei zusammengesetzten Titeln."
+                ToolTip {
+                    visible: ttHost6Hover.hovered
+                    delay: 500
+                    text: "Macht beim Vorlesen eine kurze Pause, wenn ein ' - ' im Namen vorkommt.\nBeispiel: 'Staffel 1 - Folge 3' wird mit Pause zwischen den Teilen gesprochen.\nVerbessert die Verständlichkeit bei zusammengesetzten Titeln."
+                }
             }
             Switch {
                 checked: settingsManager.ttsDashPauseEnabled
@@ -253,11 +277,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost7
+                HoverHandler { id: ttHost7Hover }
                 text: "Pausendauer bei \" - \""
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Dauer der Sprechpause an einem ' - '-Trenner in Millisekunden.\n100 ms = kaum wahrnehmbar · 500 ms = deutliche Pause · 2000 ms = lange Pause.\nNur wirksam wenn 'Pause bei \" - \"' aktiviert ist."
+                ToolTip {
+                    visible: ttHost7Hover.hovered
+                    delay: 500
+                    text: "Dauer der Sprechpause an einem ' - '-Trenner in Millisekunden.\n100 ms = kaum wahrnehmbar · 500 ms = deutliche Pause · 2000 ms = lange Pause.\nNur wirksam wenn 'Pause bei \" - \"' aktiviert ist."
+                }
             }
             Slider {
                 id: dashPauseSlider
@@ -274,28 +302,37 @@ ScrollView {
             Layout.fillWidth: true
             Label { text: ""; Layout.preferredWidth: 220 }
             Button {
+                id: ttHost8
                 text: "Probehören"
                 enabled: settingsManager.ttsEnabled
                 onClicked: root.speakTest("Hallo - dies ist ein Test - der Sprachausgabe.")
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Spricht einen Beispielsatz mit den aktuellen Einstellungen,\num Stimme, Geschwindigkeit und Lautstärke zu testen."
+                ToolTip {
+                    visible: ttHost8.hovered
+                    delay: 500
+                    text: "Spricht einen Beispielsatz mit den aktuellen Einstellungen,\num Stimme, Geschwindigkeit und Lautstärke zu testen."
+                }
                 HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
             Button {
+                id: ttHost9
                 text: "Stimmen aktualisieren"
                 onClicked: langCombo.refresh()
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Lädt die Liste der verfügbaren Stimmen und Sprachen neu.\nNützlich nach dem Installieren neuer Sprachpakete."
+                ToolTip {
+                    visible: ttHost9.hovered
+                    delay: 500
+                    text: "Lädt die Liste der verfügbaren Stimmen und Sprachen neu.\nNützlich nach dem Installieren neuer Sprachpakete."
+                }
                 HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
             Button {
+                id: ttHost10
                 text: "Weitere Stimmen installieren …"
                 onClicked: Qt.openUrlExternally("ms-settings:speech")
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Öffnet die Windows-Einstellungen zum Installieren weiterer Sprachpakete.\nNach der Installation 'Stimmen aktualisieren' klicken."
+                ToolTip {
+                    visible: ttHost10.hovered
+                    delay: 500
+                    text: "Öffnet die Windows-Einstellungen zum Installieren weiterer Sprachpakete.\nNach der Installation 'Stimmen aktualisieren' klicken."
+                }
                 HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
         }
@@ -303,11 +340,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost11
+                HoverHandler { id: ttHost11Hover }
                 text: "Verzögerung vor Sprechen"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Wartezeit nach dem Klick, bevor der Name vorgelesen wird.\n0 ms = sofort · 500 ms = halbe Sekunde Verzögerung.\nEmpfohlen: 200–400 ms, um versehentliches Vorlesen\nbeim schnellen Durchklicken zu vermeiden."
+                ToolTip {
+                    visible: ttHost11Hover.hovered
+                    delay: 500
+                    text: "Wartezeit nach dem Klick, bevor der Name vorgelesen wird.\n0 ms = sofort · 500 ms = halbe Sekunde Verzögerung.\nEmpfohlen: 200–400 ms, um versehentliches Vorlesen\nbeim schnellen Durchklicken zu vermeiden."
+                }
             }
             Slider {
                 id: clickDelaySlider

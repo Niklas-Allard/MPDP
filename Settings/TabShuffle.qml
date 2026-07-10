@@ -78,11 +78,14 @@ ScrollView {
                         }
 
                         Button {
+                            id: ttHost1
                             text: "Entfernen"
                             onClicked: settingsManager.remove_shuffle_folder(index)
-                            ToolTip.visible: hovered
-                            ToolTip.delay: 500
-                            ToolTip.text: "Diesen Ordner aus dem Shuffle-Modus entfernen.\nDer Shuffle-Button verschwindet dann im Dateibrowser für diesen Ordner.\nDie Dateien auf der Festplatte bleiben unberührt."
+                            ToolTip {
+                                visible: ttHost1.hovered
+                                delay: 500
+                                text: "Diesen Ordner aus dem Shuffle-Modus entfernen.\nDer Shuffle-Button verschwindet dann im Dateibrowser für diesen Ordner.\nDie Dateien auf der Festplatte bleiben unberührt."
+                            }
                             HoverHandler { cursorShape: Qt.PointingHandCursor }
                         }
                     }
@@ -105,15 +108,19 @@ ScrollView {
                     }
 
                     Button {
+                        id: ttHost2
                         text: "Durchsuchen…"
                         onClicked: newFolderDialog.open()
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Serienordner über den Datei-Dialog auswählen.\nDer Name wird automatisch aus dem Ordnernamen übernommen."
+                        ToolTip {
+                            visible: ttHost2.hovered
+                            delay: 500
+                            text: "Serienordner über den Datei-Dialog auswählen.\nDer Name wird automatisch aus dem Ordnernamen übernommen."
+                        }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
 
                     Button {
+                        id: ttHost3
                         text: "Hinzufügen"
                         enabled: newNameField.text.length > 0 && newPathField.text.length > 0
                         onClicked: {
@@ -121,9 +128,11 @@ ScrollView {
                             newNameField.text = ""
                             newPathField.text = ""
                         }
-                        ToolTip.visible: hovered
-                        ToolTip.delay: 500
-                        ToolTip.text: "Ordner als Serienordner für den Shuffle-Modus hinzufügen.\nIm Dateibrowser erscheint dann ein Shuffle-Button für diesen Ordner,\nder eine zufällige, noch nicht gesehene Folge abspielt."
+                        ToolTip {
+                            visible: ttHost3.hovered
+                            delay: 500
+                            text: "Ordner als Serienordner für den Shuffle-Modus hinzufügen.\nIm Dateibrowser erscheint dann ein Shuffle-Button für diesen Ordner,\nder eine zufällige, noch nicht gesehene Folge abspielt."
+                        }
                         HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
                 }

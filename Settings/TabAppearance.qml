@@ -13,11 +13,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost1
+                HoverHandler { id: ttHost1Hover }
                 text: "Karten-Mindestbreite"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Minimale Breite jeder Kachel im Dateibrowser.\nKleinere Werte = mehr Kacheln nebeneinander, größere Werte = weniger, aber breitere Kacheln."
+                ToolTip {
+                    visible: ttHost1Hover.hovered
+                    delay: 500
+                    text: "Minimale Breite jeder Kachel im Dateibrowser.\nKleinere Werte = mehr Kacheln nebeneinander, größere Werte = weniger, aber breitere Kacheln."
+                }
             }
             Slider {
                 id: cardWidthSlider
@@ -32,11 +36,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost2
+                HoverHandler { id: ttHost2Hover }
                 text: "Karten-Mindesthöhe"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Minimale Höhe jeder Kachel im Dateibrowser.\nKleinere Werte = mehr Kacheln untereinander, größere Werte = weniger, aber höhere Kacheln."
+                ToolTip {
+                    visible: ttHost2Hover.hovered
+                    delay: 500
+                    text: "Minimale Höhe jeder Kachel im Dateibrowser.\nKleinere Werte = mehr Kacheln untereinander, größere Werte = weniger, aber höhere Kacheln."
+                }
             }
             Slider {
                 id: cardHeightSlider
@@ -51,11 +59,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost3
+                HoverHandler { id: ttHost3Hover }
                 text: "Schriftgröße"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Skalierungsfaktor für alle Texte in der App.\n1,0 = Normalgröße · 1,5 = 50 % größer · 2,0 = doppelt so groß.\nEmpfohlen für sehbeeinträchtigte Nutzer: 1,3–1,8."
+                ToolTip {
+                    visible: ttHost3Hover.hovered
+                    delay: 500
+                    text: "Skalierungsfaktor für alle Texte in der App.\n1,0 = Normalgröße · 1,5 = 50 % größer · 2,0 = doppelt so groß.\nEmpfohlen für sehbeeinträchtigte Nutzer: 1,3–1,8."
+                }
             }
             Slider {
                 id: fontScaleSlider
@@ -70,11 +82,15 @@ ScrollView {
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost4
+                HoverHandler { id: ttHost4Hover }
                 text: "Farbschema"
                 Layout.preferredWidth: 220
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Farbdesign der gesamten Anwendung.\n• Hell: weißer Hintergrund für helle Umgebungen\n• Dunkel: dunkler Hintergrund, augenschonend bei wenig Licht\n• Hoher Kontrast: maximaler Kontrast für sehbeeinträchtigte Nutzer"
+                ToolTip {
+                    visible: ttHost4Hover.hovered
+                    delay: 500
+                    text: "Farbdesign der gesamten Anwendung.\n• Hell: weißer Hintergrund für helle Umgebungen\n• Dunkel: dunkler Hintergrund, augenschonend bei wenig Licht\n• Hoher Kontrast: maximaler Kontrast für sehbeeinträchtigte Nutzer"
+                }
             }
             ComboBox {
                 id: themeCombo

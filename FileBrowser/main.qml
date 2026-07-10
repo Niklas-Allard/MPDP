@@ -541,18 +541,21 @@ Item {
         anchors.margins: 10
 
         Button {
+            id: lastPlayedButton
             visible: root.lastPlayedFile !== ""
             icon.source: "../icons/play.svg"
             icon.width: 24
             icon.height: 24
-            ToolTip.text: {
-                var parts = root.lastPlayedFile.replace(/\\/g, "/").split("/")
-                var name = parts[parts.length - 1]
-                var dot = name.lastIndexOf(".")
-                return dot > 0 ? name.substring(0, dot) : name
+            ToolTip {
+                visible: lastPlayedButton.hovered
+                delay: 400
+                text: {
+                    var parts = root.lastPlayedFile.replace(/\\/g, "/").split("/")
+                    var name = parts[parts.length - 1]
+                    var dot = name.lastIndexOf(".")
+                    return dot > 0 ? name.substring(0, dot) : name
+                }
             }
-            ToolTip.visible: hovered
-            ToolTip.delay: 400
             onClicked: {
                 var filePath = root.lastPlayedFile.replace(/\\/g, "/")
                 var urlPath = "file:///" + filePath
@@ -586,9 +589,11 @@ Item {
             // "weg" (kein Platzverbrauch) wenn die Einstellung es vorsieht, sonst nur "ausgeblendet" (deaktiviert)
             visible: root.shuffleEnabled || !settingsManager.hideShuffleButton
             opacity: enabled ? 1 : 0.4
-            ToolTip.text: "Zufällige Folge abspielen"
-            ToolTip.visible: hovered
-            ToolTip.delay: 400
+            ToolTip {
+                visible: shuffleButton.hovered
+                delay: 400
+                text: "Zufällige Folge abspielen"
+            }
             onClicked: root.playShuffle()
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor

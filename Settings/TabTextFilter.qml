@@ -16,34 +16,46 @@ ScrollView {
         spacing: 8
 
         Label {
+            id: ttHost1
+            HoverHandler { id: ttHost1Hover }
             text: "Regeln werden der Reihe nach auf Datei-/Ordnernamen angewendet, bevor der Text gesprochen wird."
             wrapMode: Text.Wrap
             Layout.fillWidth: true
             color: settingsManager.colorText
             font.pixelSize: 12 * settingsManager.fontScale
-            ToolTip.visible: hovered
-            ToolTip.delay: 500
-            ToolTip.text: "Reguläre Ausdrücke (Regex) erlauben komplexe Suchmuster.\nBeispiele:\n• \\.[a-z]+$ → entfernt Dateiendungen (.mp4, .mkv, …)\n• ^\\[.*?\\]\\s* → entfernt führende Klammern wie '[HD] '\n• S\\d+E\\d+ → findet Staffel-/Folgenbezeichnungen wie S01E03\nRote Farbe im Muster-Feld = ungültiger regulärer Ausdruck."
+            ToolTip {
+                visible: ttHost1Hover.hovered
+                delay: 500
+                text: "Reguläre Ausdrücke (Regex) erlauben komplexe Suchmuster.\nBeispiele:\n• \\.[a-z]+$ → entfernt Dateiendungen (.mp4, .mkv, …)\n• ^\\[.*?\\]\\s* → entfernt führende Klammern wie '[HD] '\n• S\\d+E\\d+ → findet Staffel-/Folgenbezeichnungen wie S01E03\nRote Farbe im Muster-Feld = ungültiger regulärer Ausdruck."
+            }
         }
 
         // Header
         RowLayout {
             Layout.fillWidth: true
             Label {
+                id: ttHost2
+                HoverHandler { id: ttHost2Hover }
                 text: "Muster (Regex)"
                 Layout.fillWidth: true
                 font.bold: true
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Regulärer Ausdruck, der im Datei-/Ordnernamen gesucht wird.\nRot = ungültiges Muster. Groß-/Kleinschreibung wird ignoriert."
+                ToolTip {
+                    visible: ttHost2Hover.hovered
+                    delay: 500
+                    text: "Regulärer Ausdruck, der im Datei-/Ordnernamen gesucht wird.\nRot = ungültiges Muster. Groß-/Kleinschreibung wird ignoriert."
+                }
             }
             Label {
+                id: ttHost3
+                HoverHandler { id: ttHost3Hover }
                 text: "Ersetzung"
                 Layout.fillWidth: true
                 font.bold: true
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Text, durch den das gefundene Muster ersetzt wird.\nLeer lassen = gefundener Text wird einfach gelöscht."
+                ToolTip {
+                    visible: ttHost3Hover.hovered
+                    delay: 500
+                    text: "Text, durch den das gefundene Muster ersetzt wird.\nLeer lassen = gefundener Text wird einfach gelöscht."
+                }
             }
             Item  { width: 170 }
         }
@@ -129,11 +141,15 @@ ScrollView {
             spacing: 6
 
             Label {
+                id: ttHost4
+                HoverHandler { id: ttHost4Hover }
                 text: "Testtext:"
                 Layout.preferredWidth: 80
-                ToolTip.visible: hovered
-                ToolTip.delay: 500
-                ToolTip.text: "Gibt einen Beispielnamen ein, um das Ergebnis aller Filterregeln live zu sehen.\nDer Pfeil zeigt den Text nach Anwendung aller Regeln."
+                ToolTip {
+                    visible: ttHost4Hover.hovered
+                    delay: 500
+                    text: "Gibt einen Beispielnamen ein, um das Ergebnis aller Filterregeln live zu sehen.\nDer Pfeil zeigt den Text nach Anwendung aller Regeln."
+                }
             }
 
             TextField {
