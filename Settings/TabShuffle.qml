@@ -80,6 +80,10 @@ ScrollView {
                         Button {
                             text: "Entfernen"
                             onClicked: settingsManager.remove_shuffle_folder(index)
+                            ToolTip.visible: hovered
+                            ToolTip.delay: 500
+                            ToolTip.text: "Diesen Ordner aus dem Shuffle-Modus entfernen.\nDer Shuffle-Button verschwindet dann im Dateibrowser für diesen Ordner.\nDie Dateien auf der Festplatte bleiben unberührt."
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
                         }
                     }
                 }
@@ -103,6 +107,10 @@ ScrollView {
                     Button {
                         text: "Durchsuchen…"
                         onClicked: newFolderDialog.open()
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 500
+                        ToolTip.text: "Serienordner über den Datei-Dialog auswählen.\nDer Name wird automatisch aus dem Ordnernamen übernommen."
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
 
                     Button {
@@ -113,6 +121,10 @@ ScrollView {
                             newNameField.text = ""
                             newPathField.text = ""
                         }
+                        ToolTip.visible: hovered
+                        ToolTip.delay: 500
+                        ToolTip.text: "Ordner als Serienordner für den Shuffle-Modus hinzufügen.\nIm Dateibrowser erscheint dann ein Shuffle-Button für diesen Ordner,\nder eine zufällige, noch nicht gesehene Folge abspielt."
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
                 }
             }

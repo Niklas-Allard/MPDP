@@ -71,7 +71,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Sprachausgabe aktiv"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Sprachausgabe aktiv"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Aktiviert oder deaktiviert das automatische Vorlesen\nvon Datei- und Ordnernamen beim Navigieren im Dateibrowser.\nAlle anderen Sprachausgabe-Einstellungen sind nur wirksam wenn diese Option aktiv ist."
+            }
             Switch {
                 checked: settingsManager.ttsEnabled
                 onToggled: settingsManager.ttsEnabled = checked
@@ -81,7 +87,13 @@ ScrollView {
         // ── Sprache ───────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Sprache"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Sprache"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Sprache der Sprachausgabe.\nEs werden nur Windows-Sprachpakete angezeigt, die auf diesem Gerät installiert sind.\nWeitere Sprachen können über 'Weitere Stimmen installieren' hinzugefügt werden."
+            }
             ComboBox {
                 id: langCombo
                 Layout.fillWidth: true
@@ -139,7 +151,13 @@ ScrollView {
         // ── Stimme ────────────────────────────────────────────────────────────
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Stimme"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Stimme"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Sprechstimme innerhalb der gewählten Sprache.\nVerschiedene Stimmen klingen unterschiedlich natürlich – einfach ausprobieren.\nNach der Auswahl kann 'Probehören' zum Vergleich genutzt werden."
+            }
             ComboBox {
                 id: voiceCombo
                 Layout.fillWidth: true
@@ -179,7 +197,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Geschwindigkeit"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Geschwindigkeit"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Sprechgeschwindigkeit der Stimme.\n0,0 = normale Geschwindigkeit\nNegative Werte = langsamer (bis −1,0 = sehr langsam)\nPositive Werte = schneller (bis +1,0 = sehr schnell)\nEmpfehlung für leichteres Verstehen: −0,2 bis −0,4."
+            }
             Slider {
                 id: rateSlider
                 Layout.fillWidth: true
@@ -193,7 +217,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Lautstärke"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Lautstärke"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Lautstärke der Sprachausgabe, unabhängig von der Medienwiedergabe.\n0 % = stumm · 100 % = maximale Lautstärke.\nDiese Einstellung beeinflusst nur das Vorlesen, nicht das abgespielte Video."
+            }
             Slider {
                 id: ttsVolSlider
                 Layout.fillWidth: true
@@ -207,7 +237,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Pause bei \" - \""; Layout.preferredWidth: 220 }
+            Label {
+                text: "Pause bei \" - \""
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Macht beim Vorlesen eine kurze Pause, wenn ein ' - ' im Namen vorkommt.\nBeispiel: 'Staffel 1 - Folge 3' wird mit Pause zwischen den Teilen gesprochen.\nVerbessert die Verständlichkeit bei zusammengesetzten Titeln."
+            }
             Switch {
                 checked: settingsManager.ttsDashPauseEnabled
                 onToggled: settingsManager.ttsDashPauseEnabled = checked
@@ -216,7 +252,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Pausendauer bei \" - \""; Layout.preferredWidth: 220 }
+            Label {
+                text: "Pausendauer bei \" - \""
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Dauer der Sprechpause an einem ' - '-Trenner in Millisekunden.\n100 ms = kaum wahrnehmbar · 500 ms = deutliche Pause · 2000 ms = lange Pause.\nNur wirksam wenn 'Pause bei \" - \"' aktiviert ist."
+            }
             Slider {
                 id: dashPauseSlider
                 Layout.fillWidth: true
@@ -235,20 +277,38 @@ ScrollView {
                 text: "Probehören"
                 enabled: settingsManager.ttsEnabled
                 onClicked: root.speakTest("Hallo - dies ist ein Test - der Sprachausgabe.")
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Spricht einen Beispielsatz mit den aktuellen Einstellungen,\num Stimme, Geschwindigkeit und Lautstärke zu testen."
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
             Button {
                 text: "Stimmen aktualisieren"
                 onClicked: langCombo.refresh()
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Lädt die Liste der verfügbaren Stimmen und Sprachen neu.\nNützlich nach dem Installieren neuer Sprachpakete."
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
             Button {
                 text: "Weitere Stimmen installieren …"
                 onClicked: Qt.openUrlExternally("ms-settings:speech")
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Öffnet die Windows-Einstellungen zum Installieren weiterer Sprachpakete.\nNach der Installation 'Stimmen aktualisieren' klicken."
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
         }
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Verzögerung vor Sprechen"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Verzögerung vor Sprechen"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Wartezeit nach dem Klick, bevor der Name vorgelesen wird.\n0 ms = sofort · 500 ms = halbe Sekunde Verzögerung.\nEmpfohlen: 200–400 ms, um versehentliches Vorlesen\nbeim schnellen Durchklicken zu vermeiden."
+            }
             Slider {
                 id: clickDelaySlider
                 Layout.fillWidth: true

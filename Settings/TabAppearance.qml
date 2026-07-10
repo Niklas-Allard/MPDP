@@ -12,7 +12,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Karten-Mindestbreite"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Karten-Mindestbreite"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Minimale Breite jeder Kachel im Dateibrowser.\nKleinere Werte = mehr Kacheln nebeneinander, größere Werte = weniger, aber breitere Kacheln."
+            }
             Slider {
                 id: cardWidthSlider
                 Layout.fillWidth: true
@@ -25,7 +31,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Karten-Mindesthöhe"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Karten-Mindesthöhe"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Minimale Höhe jeder Kachel im Dateibrowser.\nKleinere Werte = mehr Kacheln untereinander, größere Werte = weniger, aber höhere Kacheln."
+            }
             Slider {
                 id: cardHeightSlider
                 Layout.fillWidth: true
@@ -38,7 +50,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Schriftgröße"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Schriftgröße"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Skalierungsfaktor für alle Texte in der App.\n1,0 = Normalgröße · 1,5 = 50 % größer · 2,0 = doppelt so groß.\nEmpfohlen für sehbeeinträchtigte Nutzer: 1,3–1,8."
+            }
             Slider {
                 id: fontScaleSlider
                 Layout.fillWidth: true
@@ -51,7 +69,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Farbschema"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Farbschema"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Farbdesign der gesamten Anwendung.\n• Hell: weißer Hintergrund für helle Umgebungen\n• Dunkel: dunkler Hintergrund, augenschonend bei wenig Licht\n• Hoher Kontrast: maximaler Kontrast für sehbeeinträchtigte Nutzer"
+            }
             ComboBox {
                 id: themeCombo
                 Layout.fillWidth: true

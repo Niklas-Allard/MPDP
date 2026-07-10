@@ -91,6 +91,9 @@ ScrollView {
                     Layout.fillWidth: true
                     font.pixelSize: 13 * settingsManager.fontScale
                     color: settingsManager.colorText
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 500
+                    ToolTip.text: "TMDB (The Movie Database) ist eine kostenlose Filmdatenbank.\nMit einem API-Key können automatisch Poster/Cover für Serien und Filme\nheruntergeladen werden. Die Registrierung ist kostenlos."
                 }
 
                 RowLayout {
@@ -166,6 +169,9 @@ ScrollView {
                     Layout.fillWidth: true
                     font.pixelSize: 13 * settingsManager.fontScale
                     color: settingsManager.colorText
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 500
+                    ToolTip.text: "Bestimmt die Auflösung der heruntergeladenen Poster-Bilder.\nEmpfohlen: w500 (~90 KB) – gutes Verhältnis aus Qualität und Dateigröße.\nw342 reicht für kleine Kacheln, 'original' nur bei sehr großen Bildschirmen nötig."
                 }
 
                 ComboBox {
@@ -176,6 +182,9 @@ ScrollView {
                     onActivated: {
                         settingsManager.tmdbPosterQuality = root.posterSizeKeys[currentIndex]
                     }
+                    ToolTip.visible: hovered
+                    ToolTip.delay: 500
+                    ToolTip.text: "Auflösung der Poster:\n• w92–w185: klein, schnell, wenig Speicher\n• w342: mittel, für normale Kachelgrößen empfohlen\n• w500: hoch, Standardempfehlung\n• w780/original: sehr hoch, für große Displays"
                 }
             }
         }

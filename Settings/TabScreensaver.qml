@@ -31,7 +31,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Bildschirmschoner aktiv"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Bildschirmschoner aktiv"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Aktiviert den integrierten Bildschirmschoner.\nBei Inaktivität (kein Klick, keine Mausbewegung) werden Bilder\naus dem eingestellten Ordner im Vollbild angezeigt.\nEin Klick oder eine Mausbewegung beendet den Bildschirmschoner."
+            }
             Switch {
                 checked: settingsManager.screensaverEnabled
                 onToggled: settingsManager.screensaverEnabled = checked
@@ -40,7 +46,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Wartezeit bis Aktivierung"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Wartezeit bis Aktivierung"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Zeit der Inaktivität, nach der der Bildschirmschoner automatisch startet.\nKurze Wartezeit: Bildschirmschoner startet schnell bei Pause.\nLange Wartezeit: Nur bei längerer Untätigkeit."
+            }
             Slider {
                 id: ssTimeoutSlider
                 Layout.fillWidth: true
@@ -62,7 +74,13 @@ ScrollView {
 
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Anzeigedauer pro Bild"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Anzeigedauer pro Bild"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Wie lange jedes Bild angezeigt wird, bevor zum nächsten gewechselt wird.\n1 s = schnelle Diashow · 10 s = ruhige Betrachtung · 60 s = sehr langsam.\nDie Bilder werden zufällig aus dem Bilderordner ausgewählt."
+            }
             Slider {
                 id: ssIntervalSlider
                 Layout.fillWidth: true
@@ -81,7 +99,13 @@ ScrollView {
             Layout.fillWidth: true
             spacing: 8
 
-            Label { text: "Bilderordner"; Layout.preferredWidth: 220 }
+            Label {
+                text: "Bilderordner"
+                Layout.preferredWidth: 220
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Ordner, aus dem der Bildschirmschoner zufällige Bilder lädt.\nUnterstützte Formate: JPG, PNG, BMP, GIF.\nAlle Bilder direkt im Ordner werden verwendet (keine Unterordner)."
+            }
 
             TextField {
                 id: ssDirField
@@ -95,12 +119,20 @@ ScrollView {
                 text: "Durchsuchen…"
                 enabled: settingsManager.screensaverEnabled
                 onClicked: ssDirDialog.open()
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Ordner über den Datei-Dialog auswählen."
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
 
             Button {
                 text: "Speichern"
                 enabled: settingsManager.screensaverEnabled
                 onClicked: settingsManager.screensaverImageDirectory = ssDirField.text
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Den eingegebenen Pfad als Bilderordner speichern."
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
         }
 

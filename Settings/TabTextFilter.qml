@@ -21,13 +21,30 @@ ScrollView {
             Layout.fillWidth: true
             color: settingsManager.colorText
             font.pixelSize: 12 * settingsManager.fontScale
+            ToolTip.visible: hovered
+            ToolTip.delay: 500
+            ToolTip.text: "Reguläre Ausdrücke (Regex) erlauben komplexe Suchmuster.\nBeispiele:\n• \\.[a-z]+$ → entfernt Dateiendungen (.mp4, .mkv, …)\n• ^\\[.*?\\]\\s* → entfernt führende Klammern wie '[HD] '\n• S\\d+E\\d+ → findet Staffel-/Folgenbezeichnungen wie S01E03\nRote Farbe im Muster-Feld = ungültiger regulärer Ausdruck."
         }
 
         // Header
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Muster (Regex)"; Layout.fillWidth: true; font.bold: true }
-            Label { text: "Ersetzung";      Layout.fillWidth: true; font.bold: true }
+            Label {
+                text: "Muster (Regex)"
+                Layout.fillWidth: true
+                font.bold: true
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Regulärer Ausdruck, der im Datei-/Ordnernamen gesucht wird.\nRot = ungültiges Muster. Groß-/Kleinschreibung wird ignoriert."
+            }
+            Label {
+                text: "Ersetzung"
+                Layout.fillWidth: true
+                font.bold: true
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Text, durch den das gefundene Muster ersetzt wird.\nLeer lassen = gefundener Text wird einfach gelöscht."
+            }
             Item  { width: 170 }
         }
 
@@ -111,7 +128,13 @@ ScrollView {
             Layout.fillWidth: true
             spacing: 6
 
-            Label { text: "Testtext:"; Layout.preferredWidth: 80 }
+            Label {
+                text: "Testtext:"
+                Layout.preferredWidth: 80
+                ToolTip.visible: hovered
+                ToolTip.delay: 500
+                ToolTip.text: "Gibt einen Beispielnamen ein, um das Ergebnis aller Filterregeln live zu sehen.\nDer Pfeil zeigt den Text nach Anwendung aller Regeln."
+            }
 
             TextField {
                 id: regexTestInput

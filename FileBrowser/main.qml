@@ -457,7 +457,8 @@ Item {
     }
 
     RowLayout {
-        anchors.horizontalCenter: parent.horizontalCenter
+        id: leftNavRow
+        anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 10
 
@@ -480,6 +481,12 @@ Item {
                 cursorShape: Qt.PointingHandCursor
             }
         }
+    }
+
+    RowLayout {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
 
         // Pagination Buttons
         Button {
@@ -525,6 +532,13 @@ Item {
                 cursorShape: Qt.PointingHandCursor
             }
         }
+    }
+
+    RowLayout {
+        id: rightNavRow
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
 
         Button {
             visible: root.lastPlayedFile !== ""
