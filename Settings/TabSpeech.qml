@@ -197,11 +197,19 @@ ScrollView {
                     // Gespeicherte Stimme wiederherstellen, sonst erste nehmen
                     var idx = names.indexOf(settingsManager.ttsVoice)
                     currentIndex = idx >= 0 ? idx : 0
+
+                    // ttsProbe auch ohne Nutzerinteraktion auf die aktuelle Auswahl setzen,
+                    // sonst spricht "Probehören" nach dem Öffnen der Seite mit der System-Standardstimme.
+                    if (currentIndex >= 0 && currentIndex < filtered.length) {
+                        ttsProbe.locale = selectedLocale
+                        ttsProbe.voice = filtered[currentIndex]
+                    }
                 }
 
                 onActivated: {
                     if (currentIndex < 0 || currentIndex >= voiceList.length) return
                     settingsManager.ttsVoice = currentText
+                    ttsProbe.locale = langCombo.localeList[langCombo.currentIndex]
                     ttsProbe.voice = voiceList[currentIndex]
                 }
             }
