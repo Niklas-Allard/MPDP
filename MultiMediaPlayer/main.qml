@@ -50,9 +50,9 @@ Item {
 
         onStateChanged: {
             if (state === TextToSpeech.Ready || state === TextToSpeech.Error) {
-                // Erst die Queue abarbeiten (Pausen bei " - " oder Stimmwechsel)
+                // Erst die Queue abarbeiten (Stimmwechsel)
                 if (multiMediaPlayerPage._ttsQueue.length > 0) {
-                    multiMediaPlayerPage.processNextQueueItem()
+                    multiMediaPlayerPage.speakNextFromQueue()
                     return
                 }
                 // Queue leer: Video starten wenn Ansage abgeschlossen
@@ -65,13 +65,7 @@ Item {
     }
 
     property var _ttsQueue: []
-
-    Timer {
-        id: dashPauseTimer
-        interval: settingsManager ? settingsManager.ttsDashPauseDuration : 400
-        repeat: false
-        onTriggered: multiMediaPlayerPage.speakNextFromQueue()
-    }
+    property var _cachedVoices: null
 
     Connections {
         target: settingsManager
@@ -80,7 +74,10 @@ Item {
 
     // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
     // hier werden die Stimmen aller installierten Sprachen eingesammelt.
+    // Wird gecacht, da das Durchlaufen aller Locales (pro Aufruf) mehrere hundert ms dauern kann
+    // und sonst bei jedem gesprochenen Segment (auch nach der " - "-Pause) erneut ausgeführt würde.
     function getAllVoices() {
+        if (multiMediaPlayerPage._cachedVoices !== null) return multiMediaPlayerPage._cachedVoices
         var savedLocale = tts.locale
         var locales = tts.availableLocales()
         var all = []
@@ -89,6 +86,7 @@ Item {
             all = all.concat(tts.availableVoices())
         }
         tts.locale = savedLocale
+        multiMediaPlayerPage._cachedVoices = all
         return all
     }
 
@@ -115,7 +113,7 @@ Item {
         }
     }
 
-    function buildTtsSegments(text, wordProns, withPause) {
+    function buildTtsSegments(text, wordProns) {
         var segs = [{text: text, voice: null}]
         for (var i = 0; i < wordProns.length; i++) {
             var entry = wordProns[i]
@@ -141,11 +139,8 @@ Item {
             segs = newSegs
         }
         var result = []
-        var first = true
         for (var k = 0; k < segs.length; k++) {
             if (segs[k].text.trim().length === 0) continue
-            segs[k].pause = withPause && first
-            first = false
             result.push(segs[k])
         }
         return result
@@ -160,15 +155,6 @@ Item {
             multiMediaPlayerPage.applyTtsVoice()
         }
         tts.say(item.text)
-    }
-
-    function processNextQueueItem() {
-        if (multiMediaPlayerPage._ttsQueue.length === 0) return
-        if (multiMediaPlayerPage._ttsQueue[0].pause) {
-            dashPauseTimer.start()
-        } else {
-            multiMediaPlayerPage.speakNextFromQueue()
-        }
     }
 
     // Liefert den reinen Dateinamen aus einer "file:///..."-Quelle
@@ -234,16 +220,10 @@ Item {
                     var wordProns2 = []
                     try { wordProns2 = JSON.parse(settingsManager.wordPronunciations || "[]") } catch (e2) {}
                     if (settingsManager.ttsDashPauseEnabled && announceText.indexOf(" - ") >= 0) {
-                        var parts2 = announceText.split(" - ").filter(function(s) { return s.trim().length > 0 })
-                        var queue2 = []
-                        for (var p2 = 0; p2 < parts2.length; p2++) {
-                            var segs2 = multiMediaPlayerPage.buildTtsSegments(parts2[p2], wordProns2, p2 > 0)
-                            for (var s2 = 0; s2 < segs2.length; s2++) queue2.push(segs2[s2])
-                        }
-                        multiMediaPlayerPage._ttsQueue = queue2
-                    } else {
-                        multiMediaPlayerPage._ttsQueue = multiMediaPlayerPage.buildTtsSegments(announceText, wordProns2, false)
+                        var sep2 = settingsManager.ttsDashPauseLevel === "long" ? ". " : ", "
+                        announceText = announceText.split(" - ").join(sep2)
                     }
+                    multiMediaPlayerPage._ttsQueue = multiMediaPlayerPage.buildTtsSegments(announceText, wordProns2)
                     if (multiMediaPlayerPage._ttsQueue.length > 0)
                         multiMediaPlayerPage.speakNextFromQueue()
                 } else if (!settingsManager || settingsManager.autoPlayOnOpen) {

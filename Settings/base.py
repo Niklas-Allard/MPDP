@@ -15,7 +15,7 @@ class SettingsBase:
         "ttsRate": 0.0,
         "ttsVolume": 1.0,
         "ttsDashPauseEnabled": True,
-        "ttsDashPauseDuration": 400,
+        "ttsDashPauseLevel": "short",
         "clickSpeakDelay": 400,
         "speakTrigger": "singleClick",
         "openTrigger": "doubleClick",

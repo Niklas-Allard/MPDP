@@ -42,7 +42,7 @@ class SettingsManager(
             self.fontScaleChanged, self.themeChanged,
             self.ttsEnabledChanged, self.ttsVoiceChanged,
             self.ttsRateChanged, self.ttsVolumeChanged,
-            self.ttsDashPauseEnabledChanged, self.ttsDashPauseDurationChanged,
+            self.ttsDashPauseEnabledChanged, self.ttsDashPauseLevelChanged,
             self.clickSpeakDelayChanged,
             self.speakTriggerChanged, self.openTriggerChanged, self.hoverDelayChanged,
             self.showHiddenFilesChanged, self.sortOrderChanged, self.hideDisabledNavButtonsChanged,

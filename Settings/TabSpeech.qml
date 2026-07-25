@@ -17,14 +17,8 @@ ScrollView {
             if (state === TextToSpeech.Ready) {
                 langCombo.refresh()
             }
-            if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
-                    && root._ttsQueue.length > 0) {
-                ttsPauseTimer.start()
-            }
         }
     }
-
-    property var _ttsQueue: []
 
     // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
     // hier werden die Stimmen aller installierten Sprachen eingesammelt.
@@ -40,27 +34,13 @@ ScrollView {
         return all
     }
 
-    Timer {
-        id: ttsPauseTimer
-        interval: settingsManager.ttsDashPauseDuration
-        repeat: false
-        onTriggered: {
-            if (root._ttsQueue.length > 0) {
-                ttsProbe.say(root._ttsQueue.shift())
-            }
-        }
-    }
-
     function speakTest(text) {
         ttsProbe.stop()
-        root._ttsQueue = []
         if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
-            var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
-            root._ttsQueue = parts
-            if (root._ttsQueue.length > 0) ttsProbe.say(root._ttsQueue.shift())
-        } else {
-            ttsProbe.say(text)
+            var sep = settingsManager.ttsDashPauseLevel === "long" ? ". " : ", "
+            text = text.split(" - ").join(sep)
         }
+        ttsProbe.say(text)
     }
 
     Component.onCompleted: langCombo.refresh()
@@ -287,23 +267,30 @@ ScrollView {
             Label {
                 id: ttHost7
                 HoverHandler { id: ttHost7Hover }
-                text: "Pausendauer bei \" - \""
+                text: "Länge der Pause bei \" - \""
                 Layout.preferredWidth: 220
                 ToolTip {
                     visible: ttHost7Hover.hovered
                     delay: 500
-                    text: "Dauer der Sprechpause an einem ' - '-Trenner in Millisekunden.\n100 ms = kaum wahrnehmbar · 500 ms = deutliche Pause · 2000 ms = lange Pause.\nNur wirksam wenn 'Pause bei \" - \"' aktiviert ist."
+                    text: "Wie deutlich die Sprechpause an einem ' - '-Trenner ausfällt.\nKurz ≈ 0,7 Sekunden (wie bei einem Komma) · Lang ≈ 1,5 Sekunden (wie bei einem Satzende).\nDie genaue Dauer hängt von der gewählten Stimme ab und lässt sich technisch\nnicht in Millisekunden feiner einstellen.\nNur wirksam wenn 'Pause bei \" - \"' aktiviert ist."
                 }
             }
-            Slider {
-                id: dashPauseSlider
-                Layout.fillWidth: true
+            ButtonGroup { id: pauseLevelGroup }
+            RadioButton {
+                text: "Kurz"
                 enabled: settingsManager.ttsDashPauseEnabled && settingsManager.ttsEnabled
-                from: 100; to: 2000; stepSize: 50
-                value: settingsManager.ttsDashPauseDuration
-                onMoved: settingsManager.ttsDashPauseDuration = value
+                ButtonGroup.group: pauseLevelGroup
+                checked: settingsManager.ttsDashPauseLevel !== "long"
+                onToggled: if (checked) settingsManager.ttsDashPauseLevel = "short"
             }
-            Label { text: Math.round(dashPauseSlider.value) + " ms"; Layout.preferredWidth: 70 }
+            RadioButton {
+                text: "Lang"
+                enabled: settingsManager.ttsDashPauseEnabled && settingsManager.ttsEnabled
+                ButtonGroup.group: pauseLevelGroup
+                checked: settingsManager.ttsDashPauseLevel === "long"
+                onToggled: if (checked) settingsManager.ttsDashPauseLevel = "long"
+            }
+            Item { Layout.fillWidth: true }
         }
 
         RowLayout {

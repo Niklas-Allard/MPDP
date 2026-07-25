@@ -119,23 +119,20 @@ Item {
         onStateChanged: {
             if ((state === TextToSpeech.Ready || state === TextToSpeech.Error)
                     && root._ttsQueue.length > 0) {
-                root.processNextQueueItem()
+                root.speakNextFromQueue()
             }
         }
     }
 
     property var _ttsQueue: []
-
-    Timer {
-        id: dashPauseTimer
-        interval: settingsManager.ttsDashPauseDuration
-        repeat: false
-        onTriggered: root.speakNextFromQueue()
-    }
+    property var _cachedVoices: null
 
     // availableVoices() liefert nur Stimmen der aktuell gesetzten Locale (Default: Systemsprache) –
     // hier werden die Stimmen aller installierten Sprachen eingesammelt.
+    // Wird gecacht, da das Durchlaufen aller Locales (pro Aufruf) mehrere hundert ms dauern kann
+    // und sonst bei jedem gesprochenen Segment (auch nach der " - "-Pause) erneut ausgeführt würde.
     function getAllVoices() {
+        if (root._cachedVoices !== null) return root._cachedVoices
         var savedLocale = tts.locale
         var locales = tts.availableLocales()
         var all = []
@@ -144,6 +141,7 @@ Item {
             all = all.concat(tts.availableVoices())
         }
         tts.locale = savedLocale
+        root._cachedVoices = all
         return all
     }
 
@@ -170,8 +168,8 @@ Item {
         }
     }
 
-    // Segmentiert Text anhand der Wortaussprache-Liste in {text, voice, pause}-Objekte.
-    function buildTtsSegments(text, wordProns, withPause) {
+    // Segmentiert Text anhand der Wortaussprache-Liste in {text, voice}-Objekte.
+    function buildTtsSegments(text, wordProns) {
         var segs = [{text: text, voice: null}]
         for (var i = 0; i < wordProns.length; i++) {
             var entry = wordProns[i]
@@ -197,11 +195,8 @@ Item {
             segs = newSegs
         }
         var result = []
-        var first = true
         for (var k = 0; k < segs.length; k++) {
             if (segs[k].text.trim().length === 0) continue
-            segs[k].pause = withPause && first
-            first = false
             result.push(segs[k])
         }
         return result
@@ -216,15 +211,6 @@ Item {
             root.applyTtsVoice()
         }
         tts.say(item.text)
-    }
-
-    function processNextQueueItem() {
-        if (root._ttsQueue.length === 0) return
-        if (root._ttsQueue[0].pause) {
-            dashPauseTimer.start()
-        } else {
-            root.speakNextFromQueue()
-        }
     }
 
     // Lädt den aktuellen Ordner neu (z. B. nach Änderung von Sortierung/versteckte Dateien)
@@ -263,16 +249,10 @@ Item {
         try { wordProns = JSON.parse(settingsManager.wordPronunciations || "[]") } catch (e) {}
 
         if (settingsManager.ttsDashPauseEnabled && text.indexOf(" - ") >= 0) {
-            var parts = text.split(" - ").filter(function(s) { return s.trim().length > 0 })
-            var queue = []
-            for (var p = 0; p < parts.length; p++) {
-                var segs = root.buildTtsSegments(parts[p], wordProns, p > 0)
-                for (var s = 0; s < segs.length; s++) queue.push(segs[s])
-            }
-            root._ttsQueue = queue
-        } else {
-            root._ttsQueue = root.buildTtsSegments(text, wordProns, false)
+            var sep = settingsManager.ttsDashPauseLevel === "long" ? ". " : ", "
+            text = text.split(" - ").join(sep)
         }
+        root._ttsQueue = root.buildTtsSegments(text, wordProns)
 
         if (root._ttsQueue.length > 0) root.speakNextFromQueue()
     }

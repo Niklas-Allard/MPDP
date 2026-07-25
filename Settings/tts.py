@@ -7,7 +7,7 @@ class TTSMixin:
     ttsRateChanged = Signal()
     ttsVolumeChanged = Signal()
     ttsDashPauseEnabledChanged = Signal()
-    ttsDashPauseDurationChanged = Signal()
+    ttsDashPauseLevelChanged = Signal()
     clickSpeakDelayChanged = Signal()
 
     @Property(bool, notify=ttsEnabledChanged)
@@ -50,13 +50,13 @@ class TTSMixin:
     def ttsDashPauseEnabled(self, value):
         self._set("ttsDashPauseEnabled", bool(value), self.ttsDashPauseEnabledChanged)
 
-    @Property(int, notify=ttsDashPauseDurationChanged)
-    def ttsDashPauseDuration(self):
-        return self._get("ttsDashPauseDuration", int)
+    @Property(str, notify=ttsDashPauseLevelChanged)
+    def ttsDashPauseLevel(self):
+        return self._get("ttsDashPauseLevel", str)
 
-    @ttsDashPauseDuration.setter
-    def ttsDashPauseDuration(self, value):
-        self._set("ttsDashPauseDuration", int(value), self.ttsDashPauseDurationChanged)
+    @ttsDashPauseLevel.setter
+    def ttsDashPauseLevel(self, value):
+        self._set("ttsDashPauseLevel", str(value), self.ttsDashPauseLevelChanged)
 
     @Property(int, notify=clickSpeakDelayChanged)
     def clickSpeakDelay(self):
