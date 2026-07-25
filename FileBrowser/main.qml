@@ -18,11 +18,26 @@ Item {
     Component.onCompleted: {
         root.updateLastPlayed()
         root.updateShuffleEnabled()
+        root.restoreCurrentPage()
     }
 
     onFolderDataChanged: {
         root.updateLastPlayed()
         root.updateShuffleEnabled()
+    }
+
+    // Stellt die zuletzt besuchte Seite dieses Ordners wieder her (z. B. nach
+    // Rücksprung über "Home"). Wird geleert, sobald sich die Kachelgröße ändert.
+    function restoreCurrentPage() {
+        if (root.folderData && root.folderData.path && typeof pageMemory !== "undefined") {
+            root.currentPage = pageMemory.get_page(root.folderData.path)
+        }
+    }
+
+    onCurrentPageChanged: {
+        if (root.folderData && root.folderData.path && typeof pageMemory !== "undefined") {
+            pageMemory.set_page(root.folderData.path, root.currentPage)
+        }
     }
 
     function updateLastPlayed() {

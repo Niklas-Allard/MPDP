@@ -13,6 +13,7 @@ from settings_manager import SettingsManager
 from activity_monitor import ActivityMonitor
 from regex_filter import RegexFilter
 from tmdb_manager import TmdbManager
+from page_memory import PageMemory
 
 if __name__ == "__main__":
     # Organisation/Anwendungsnamen setzen, damit QSettings konsistent funktioniert
@@ -55,6 +56,11 @@ if __name__ == "__main__":
     # TMDB integration
     tmdb_manager = TmdbManager(settings_manager=settings_manager)
     engine.rootContext().setContextProperty("tmdbManager", tmdb_manager)
+
+    # Merkt sich die zuletzt angezeigte Seite je Ordner (Dateibrowser) - wird
+    # bei Änderung der Kachelgröße geleert
+    page_memory = PageMemory(settings_manager=settings_manager)
+    engine.rootContext().setContextProperty("pageMemory", page_memory)
 
     def _get_enriched_main_dirs():
         dirs = settings_manager.get_main_directories()
